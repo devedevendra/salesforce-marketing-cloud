@@ -8,11 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/postmonger@0.0.16/postmonger.min.js"></script>
+    <!-- APP_URL -->
 </head>
 <body>
     <div class="container mt-4">
-        <h3>Contact List Processor</h3>
-        <p>Map fields from the entry source Data Extension to process contact details.</p>
+        <h3>PCM Direct Mail</h3>
+        <p>Map fields from the entry source Data Extension to process.</p>
         <div id="error" style="color: red; display: none;"></div>
         <form id="configForm">
             <div class="form-group">
@@ -61,7 +62,7 @@
                     <option value="">-- Select a Field --</option>
                 </select>
             </div>
-            <button type="button" class="btn btn-primary" id="saveButton">Save</button>
+            <!--button type="button" class="btn btn-primary" id="saveButton">Save</button-->
         </form>
     </div>
 
@@ -69,6 +70,9 @@
         if (typeof Postmonger === 'undefined') {
             console.error('Postmonger failed to load');
             $('#error').text('Error: Could not load Postmonger. Please check your network connection.').show();
+        } else if (!window.APP_URL) {
+            console.error('APP_URL not defined');
+            $('#error').text('Error: Application URL not defined. Please set the APP_URL environment variable.').show();
         } else {
             const connection = new Postmonger.Session();
             let payload = {};
@@ -118,9 +122,8 @@
                 console.log('requestedSchema received:', JSON.stringify(data));
                 schema = data.schema || [];
                 if (schema.length > 0) {
-                    // Extract the DE key from the first schema entry
-                    const firstKey = schema[0].key; // e.g., "Event.DEAudience-088193c3-d712-3d3d-e7ff-376905fa5c35.identifier"
-                    dataExtensionKey = firstKey.split('.')[1]; // Extract "DEAudience-088193c3-d712-3d3d-e7ff-376905fa5c35"
+                    const firstKey = schema[0].key;
+                    dataExtensionKey = firstKey.split('.')[1];
                     console.log('Extracted Data Extension key from schema:', dataExtensionKey);
                     $('#dataExtensionKey').val(dataExtensionKey);
                     populateFieldDropdowns();
@@ -206,7 +209,6 @@
                     });
                 });
 
-                // Pre-select fields if they match the expected names
                 fieldMappings.first_name = fieldMappings.first_name || (fields.some(f => f.key === 'first_name') ? 'first_name' : '');
                 fieldMappings.last_name = fieldMappings.last_name || (fields.some(f => f.key === 'last_name') ? 'last_name' : '');
                 fieldMappings.street = fieldMappings.street || (fields.some(f => f.key === 'street') ? 'street' : '');
@@ -274,19 +276,19 @@
                 ];
                 payload['configurationArguments'] = payload['configurationArguments'] || {};
                 payload['configurationArguments'].save = { 
-                    url: "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/save", 
+                    url: `${window.APP_URL}/save`, 
                     verb: "POST", 
                     useJwt: true, 
                     configured: true 
                 };
                 payload['configurationArguments'].validate = { 
-                    url: "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/validate", 
+                    url: `${window.APP_URL}/validate`, 
                     verb: "POST", 
                     useJwt: true, 
                     configured: true 
                 };
                 payload['configurationArguments'].publish = { 
-                    url: "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/publish", 
+                    url: `${window.APP_URL}/publish`, 
                     verb: "POST", 
                     useJwt: true, 
                     configured: true 
