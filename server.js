@@ -6,10 +6,9 @@ const app = express();
 
 app.use(express.json());
 app.use(express.text({ type: 'application/jwt' }));
-app.use(express.static('public'));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const APP_URL = process.env.APP_URL || 'https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com'; // Default for local testing
+const APP_URL = process.env.APP_URL || 'https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com';
 
 const verifyJWT = (req, res, next) => {
     console.log('Verifying JWT for request:', req.method, req.url);
@@ -39,19 +38,46 @@ const verifyJWT = (req, res, next) => {
     });
 };
 
+// Serve dynamic index.html at the root route (before static middleware)
+app.get('/', (req, res) => {
+    console.log('Serving dynamic index.html for request:', req.url);
+    const indexPath = path.join(__dirname, 'public', 'index.html');
+    fs.readFile(indexPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading index.html:', err);
+            return res.status(500).send('Error loading index.html');
+        }
+        // Inject the APP_URL into the HTML as a global variable
+        const modifiedData = data.replace(
+            '<!-- APP_URL -->',
+            `<script>window.APP_URL = "${APP_URL}";</script>`
+        );
+        // Set headers to prevent caching
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Surrogate-Control': 'no-store'
+        });
+        res.send(modifiedData);
+        console.log('Dynamic index.html served with APP_URL:', APP_URL);
+    });
+});
+
+// Serve dynamic config.json
 app.get('/config.json', (req, res) => {
     console.log('Serving dynamic config.json');
     const configTemplate = {
         "workflowApiVersion": "1.1",
         "metaData": {
-            "icon": "images/pcmlogo.png",
-            "category": "Messages",
+            "icon": "images/icon.svg",
+            "category": "custom",
             "isConfigured": false
         },
         "type": "REST",
         "lang": {
             "en-US": {
-                "name": "PCM Direct Mail",
+                "name": "Contact List Processor",
                 "description": "Dynamically processes contact details from the entry source Data Extension"
             }
         },
@@ -186,23 +212,8 @@ app.get('/config.json', (req, res) => {
     console.log('Dynamic config.json served with APP_URL:', APP_URL);
 });
 
-app.get('/', (req, res) => {
-    console.log('Serving dynamic index.html');
-    const indexPath = path.join(__dirname, 'public', 'index.html');
-    fs.readFile(indexPath, 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading index.html:', err);
-            return res.status(500).send('Error loading index.html');
-        }
-        // Inject the APP_URL into the HTML as a global variable
-        const modifiedData = data.replace(
-            '<!-- APP_URL -->',
-            `<script>window.APP_URL = "${APP_URL}";</script>`
-        );
-        res.send(modifiedData);
-        console.log('Dynamic index.html served with APP_URL:', APP_URL);
-    });
-});
+// Serve static files (after the dynamic routes)
+app.use(express.static('public'));
 
 app.post('/save', verifyJWT, (req, res) => {
     console.log('Save endpoint called with body:', req.body);
