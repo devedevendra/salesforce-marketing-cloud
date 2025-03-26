@@ -2,12 +2,12 @@
     "workflowApiVersion": "1.1",
     "metaData": {
         "icon": "pcmlogo.png",
-        "category": "Messages"
+        "category": "ACTIVITIES"
     },
     "type": "REST",
     "lang": {
         "en-US": {
-            "name": "Contact Name Activity",
+            "name": "JB Activity",
             "description": "Custom activity to process contact names from Data Extension"
         }
     },
