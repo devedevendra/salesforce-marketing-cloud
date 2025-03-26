@@ -6,10 +6,8 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-// JWT Secret (will be set via Heroku config vars)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// Middleware to verify JWT
 const verifyJWT = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -26,21 +24,18 @@ const verifyJWT = (req, res, next) => {
     });
 };
 
-// Serve the config.json
 app.get('/config.json', (req, res) => {
     res.sendFile(path.join(__dirname, 'config.json'));
 });
 
-// Save endpoint
 app.post('/save', verifyJWT, (req, res) => {
-    const { contactName } = req.body;
+    const { contactNameField } = req.body;
     res.json({
         success: true,
-        contactName: contactName
+        contactNameField: contactNameField
     });
 });
 
-// Execute endpoint
 app.post('/execute', verifyJWT, (req, res) => {
     const { inArguments } = req.body;
     const contactName = inArguments[0].contactName;
@@ -53,12 +48,10 @@ app.post('/execute', verifyJWT, (req, res) => {
     });
 });
 
-// Publish endpoint
 app.post('/publish', verifyJWT, (req, res) => {
     res.json({ success: true });
 });
 
-// Validate endpoint
 app.post('/validate', verifyJWT, (req, res) => {
     res.json({ success: true });
 });
