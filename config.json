@@ -8,23 +8,13 @@
     "type": "REST",
     "lang": {
         "en-US": {
-            "name": "Contact List Processor",
+            "name": "PCM Direct Mail",
             "description": "Processes contact details from a Data Extension"
         }
     },
     "arguments": {
         "execute": {
-            "inArguments": [
-                {
-                    "first_name": "{{Event.EntrySource.first_name}}",
-                    "last_name": "{{Event.EntrySource.last_name}}",
-                    "street": "{{Event.EntrySource.street}}",
-                    "city": "{{Event.EntrySource.city}}",
-                    "state": "{{Event.EntrySource.state}}",
-                    "postal_code": "{{Event.EntrySource.postal_code}}",
-                    "country": "{{Event.EntrySource.country}}"
-                }
-            ],
+            "inArguments": [],
             "outArguments": [],
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/execute",
             "verb": "POST",
@@ -58,8 +48,8 @@
     "userInterfaces": {
         "configModal": {
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/",
-            "height": 500,
-            "width": 600,
+            "height": 600,
+            "width": 800,
             "fullscreen": false
         }
     },
@@ -68,39 +58,79 @@
             "execute": {
                 "inArguments": [
                     {
+                        "dataExtension": {
+                            "dataType": "Text",
+                            "isNullable": false,
+                            "direction": "in"
+                        },
+                        "first_name_field": {
+                            "dataType": "Text",
+                            "isNullable": false,
+                            "direction": "in"
+                        },
                         "first_name": {
                             "dataType": "Text",
                             "isNullable": false,
                             "direction": "in"
                         },
+                        "last_name_field": {
+                            "dataType": "Text",
+                            "isNullable": true,
+                            "direction": "in"
+                        },
                         "last_name": {
                             "dataType": "Text",
-                            "isNullable": false,
+                            "isNullable": true,
+                            "direction": "in"
+                        },
+                        "street_field": {
+                            "dataType": "Text",
+                            "isNullable": true,
                             "direction": "in"
                         },
                         "street": {
                             "dataType": "Text",
-                            "isNullable": false,
+                            "isNullable": true,
+                            "direction": "in"
+                        },
+                        "city_field": {
+                            "dataType": "Text",
+                            "isNullable": true,
                             "direction": "in"
                         },
                         "city": {
                             "dataType": "Text",
-                            "isNullable": false,
+                            "isNullable": true,
+                            "direction": "in"
+                        },
+                        "state_field": {
+                            "dataType": "Text",
+                            "isNullable": true,
                             "direction": "in"
                         },
                         "state": {
                             "dataType": "Text",
-                            "isNullable": false,
+                            "isNullable": true,
+                            "direction": "in"
+                        },
+                        "postal_code_field": {
+                            "dataType": "Text",
+                            "isNullable": true,
                             "direction": "in"
                         },
                         "postal_code": {
                             "dataType": "Text",
-                            "isNullable": false,
+                            "isNullable": true,
+                            "direction": "in"
+                        },
+                        "country_field": {
+                            "dataType": "Text",
+                            "isNullable": true,
                             "direction": "in"
                         },
                         "country": {
                             "dataType": "Text",
-                            "isNullable": false,
+                            "isNullable": true,
                             "direction": "in"
                         }
                     }

@@ -11,52 +11,91 @@
 </head>
 <body>
     <div class="container mt-4">
-        <h2>PCM Direct Mail</h2>
-        <p>This activity processes contact details from a Data Extension</p>
-        <div id="error" style="color: red; display: none;">Error: Could not load Postmonger. Please check your network connection.</div>
-        <form>
+        <h2>Contact List Processor</h2>
+        <p>Select a Data Extension and map fields to process contact details.</p>
+        <div id="error" style="color: red; display: none;"></div>
+        <form id="configForm">
             <div class="form-group">
-                <label for="firstName">First Name:</label>
-                <input type="text" class="form-control" id="firstName" value="{{Event.EntrySource.first_name}}" readonly>
+                <label for="dataExtension">Select Data Extension:</label>
+                <select class="form-control" id="dataExtension" name="dataExtension">
+                    <option value="">-- Select a Data Extension --</option>
+                </select>
             </div>
-            <div class="form-group">
-                <label for="lastName">Last Name:</label>
-                <input type="text" class="form-control" id="lastName" value="{{Event.EntrySource.last_name}}" readonly>
+            <div id="fieldMappings" style="display: none;">
+                <div class="form-group">
+                    <label for="firstNameField">First Name Field:</label>
+                    <select class="form-control" id="firstNameField" name="firstNameField">
+                        <option value="">-- Select a Field --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="lastNameField">Last Name Field:</label>
+                    <select class="form-control" id="lastNameField" name="lastNameField">
+                        <option value="">-- Select a Field --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="streetField">Street Field:</label>
+                    <select class="form-control" id="streetField" name="streetField">
+                        <option value="">-- Select a Field --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cityField">City Field:</label>
+                    <select class="form-control" id="cityField" name="cityField">
+                        <option value="">-- Select a Field --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="stateField">State Field:</label>
+                    <select class="form-control" id="stateField" name="stateField">
+                        <option value="">-- Select a Field --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="postalCodeField">Postal Code Field:</label>
+                    <select class="form-control" id="postalCodeField" name="postalCodeField">
+                        <option value="">-- Select a Field --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="countryField">Country Field:</label>
+                    <select class="form-control" id="countryField" name="countryField">
+                        <option value="">-- Select a Field --</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="address1">Address 1:</label>
-                <input type="text" class="form-control" id="address1" value="{{Event.EntrySource.street}}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="city">City:</label>
-                <input type="text" class="form-control" id="city" value="{{Event.EntrySource.city}}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="state">State:</label>
-                <input type="text" class="form-control" id="state" value="{{Event.EntrySource.state}}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="postalCode">Postal Code:</label>
-                <input type="text" class="form-control" id="postalCode" value="{{Event.EntrySource.postal_code}}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="country">Country:</label>
-                <input type="text" class="form-control" id="country" value="{{Event.EntrySource.country}}" readonly>
-            </div>
+            <button type="button" class="btn btn-primary" id="saveButton">Save</button>
         </form>
     </div>
 
     <script>
         if (typeof Postmonger === 'undefined') {
             console.error('Postmonger failed to load');
-            $('#error').show();
+            $('#error').text('Error: Could not load Postmonger. Please check your network connection.').show();
         } else {
             const connection = new Postmonger.Session();
             let payload = {};
+            let tokens = {};
+            let endpoints = {};
+            let schema = [];
+            let selectedDE = '';
+            let fieldMappings = {
+                first_name: '',
+                last_name: '',
+                street: '',
+                city: '',
+                state: '',
+                postal_code: '',
+                country: ''
+            };
 
             $(window).ready(function() {
                 console.log('Window ready, triggering ready event');
                 connection.trigger('ready');
+                connection.trigger('requestTokens');
+                connection.trigger('requestEndpoints');
+                connection.trigger('requestSchema');
             });
 
             connection.on('initActivity', function(data) {
@@ -66,23 +105,58 @@
                     console.log('Clearing pre-existing errors:', JSON.stringify(payload.errors));
                     payload.errors = null;
                 }
-                configureActivity();
-                console.log('Triggering updateActivity after init');
-                connection.trigger('updateActivity', payload);
-                console.log('Requesting validation after init');
-                connection.trigger('requestValidation');
+                if (payload['arguments'] && payload['arguments'].execute && payload['arguments'].execute.inArguments) {
+                    const inArgs = payload['arguments'].execute.inArguments[0] || {};
+                    fieldMappings.first_name = inArgs.first_name_field || '';
+                    fieldMappings.last_name = inArgs.last_name_field || '';
+                    fieldMappings.street = inArgs.street_field || '';
+                    fieldMappings.city = inArgs.city_field || '';
+                    fieldMappings.state = inArgs.state_field || '';
+                    fieldMappings.postal_code = inArgs.postal_code_field || '';
+                    fieldMappings.country = inArgs.country_field || '';
+                    selectedDE = inArgs.dataExtension || '';
+                    console.log('Loaded saved field mappings:', fieldMappings);
+                    console.log('Loaded selected DE:', selectedDE);
+                    if (selectedDE) {
+                        $('#dataExtension').val(selectedDE);
+                        populateFieldDropdowns();
+                        $('#fieldMappings').show();
+                        updateFieldSelections();
+                    }
+                }
+            });
+
+            connection.on('requestedTokens', function(data) {
+                console.log('requestedTokens received:', JSON.stringify(data));
+                tokens = data;
+            });
+
+            connection.on('requestedEndpoints', function(data) {
+                console.log('requestedEndpoints received:', JSON.stringify(data));
+                endpoints = data;
+                fetchDataExtensions();
+            });
+
+            connection.on('requestedSchema', function(data) {
+                console.log('requestedSchema received:', JSON.stringify(data));
+                schema = data.schema || [];
             });
 
             connection.on('requestedSave', function() {
                 console.log('requestedSave called');
-                configureActivity();
+                updatePayload();
                 console.log('Triggering updateActivity after save request');
                 connection.trigger('updateActivity', payload);
             });
 
             connection.on('requestedValidate', function() {
                 console.log('requestedValidate called');
-                configureActivity();
+                if (!selectedDE || !fieldMappings.first_name) {
+                    console.log('Validation failed: Data Extension and First Name field are required');
+                    connection.trigger('validationFinished', false);
+                    return;
+                }
+                updatePayload();
                 console.log('Triggering updateActivity before validation');
                 connection.trigger('updateActivity', payload);
                 console.log('Triggering validationFinished');
@@ -91,7 +165,12 @@
 
             connection.on('clickedNext', function() {
                 console.log('clickedNext called');
-                configureActivity();
+                if (!selectedDE || !fieldMappings.first_name) {
+                    console.log('Validation failed on Next: Data Extension and First Name field are required');
+                    $('#error').text('Please select a Data Extension and map at least the First Name field.').show();
+                    return;
+                }
+                updatePayload();
                 console.log('Triggering updateActivity before done');
                 connection.trigger('updateActivity', payload);
                 console.log('Triggering done');
@@ -112,21 +191,125 @@
 
             connection.on('error', function(error) {
                 console.error('Postmonger error:', error);
+                $('#error').text('Postmonger error: ' + error).show();
             });
 
-            function configureActivity() {
-                console.log('Configuring activity');
+            function fetchDataExtensions() {
+                console.log('Fetching Data Extensions using endpoints:', endpoints);
+                if (!endpoints || !endpoints.rest) {
+                    console.error('No REST endpoint available');
+                    $('#error').text('Error: Could not fetch Data Extensions. REST endpoint unavailable.').show();
+                    return;
+                }
+
+                const restUrl = endpoints.rest + '/data/v1/customobjectdata/';
+                console.log('REST URL for fetching DEs:', restUrl);
+
+                // Note: In a real implementation, you'd make an API call to Marketing Cloud's REST API
+                // to fetch DEs. For this example, we'll simulate it since we can't make actual API calls here.
+                // You'd typically use the tokens to authenticate the request.
+                const mockDEs = [
+                    { key: 'DEAudience-103b4e88-3f60-ca82-449d-860c5a60987b', name: 'Popular_Data' },
+                    { key: 'DEAudience-abc123', name: 'New_Contacts' }
+                ];
+                console.log('Simulated Data Extensions:', JSON.stringify(mockDEs));
+
+                const $deSelect = $('#dataExtension');
+                mockDEs.forEach(de => {
+                    $deSelect.append(`<option value="${de.key}">${de.name}</option>`);
+                });
+            }
+
+            $('#dataExtension').change(function() {
+                selectedDE = $(this).val();
+                console.log('Selected Data Extension:', selectedDE);
+                if (selectedDE) {
+                    populateFieldDropdowns();
+                    $('#fieldMappings').show();
+                } else {
+                    $('#fieldMappings').hide();
+                }
+            });
+
+            function populateFieldDropdowns() {
+                console.log('Populating field dropdowns for schema:', JSON.stringify(schema));
+                const fields = schema
+                    .filter(item => item.key.includes(selectedDE))
+                    .map(item => {
+                        const fieldName = item.key.split('.').pop();
+                        return { name: fieldName, key: fieldName };
+                    });
+
+                console.log('Fields for selected DE:', JSON.stringify(fields));
+
+                const fieldSelects = [
+                    'firstNameField', 'lastNameField', 'streetField',
+                    'cityField', 'stateField', 'postalCodeField', 'countryField'
+                ];
+
+                fieldSelects.forEach(selectId => {
+                    const $select = $(`#${selectId}`);
+                    $select.empty().append('<option value="">-- Select a Field --</option>');
+                    fields.forEach(field => {
+                        $select.append(`<option value="${field.key}">${field.name}</option>`);
+                    });
+                });
+
+                updateFieldSelections();
+            }
+
+            function updateFieldSelections() {
+                $('#firstNameField').val(fieldMappings.first_name);
+                $('#lastNameField').val(fieldMappings.last_name);
+                $('#streetField').val(fieldMappings.street);
+                $('#cityField').val(fieldMappings.city);
+                $('#stateField').val(fieldMappings.state);
+                $('#postalCodeField').val(fieldMappings.postal_code);
+                $('#countryField').val(fieldMappings.country);
+                console.log('Updated field selections:', fieldMappings);
+            }
+
+            $('#configForm').on('change', 'select[name$="Field"]', function() {
+                const fieldType = $(this).attr('name').replace('Field', '');
+                const fieldName = $(this).val();
+                fieldMappings[fieldType] = fieldName;
+                console.log(`Updated field mapping - ${fieldType}: ${fieldName}`);
+            });
+
+            $('#saveButton').click(function() {
+                console.log('Save button clicked');
+                if (!selectedDE || !fieldMappings.first_name) {
+                    console.log('Validation failed on Save: Data Extension and First Name field are required');
+                    $('#error').text('Please select a Data Extension and map at least the First Name field.').show();
+                    return;
+                }
+                updatePayload();
+                console.log('Triggering updateActivity after save');
+                connection.trigger('updateActivity', payload);
+                $('#error').hide();
+            });
+
+            function updatePayload() {
+                console.log('Updating payload with field mappings:', fieldMappings);
                 payload['arguments'] = payload['arguments'] || {};
                 payload['arguments'].execute = payload['arguments'].execute || {};
                 payload['arguments'].execute.inArguments = [
                     {
-                        "first_name": "{{Event.EntrySource.first_name}}",
-                        "last_name": "{{Event.EntrySource.last_name}}",
-                        "street": "{{Event.EntrySource.street}}",
-                        "city": "{{Event.EntrySource.city}}",
-                        "state": "{{Event.EntrySource.state}}",
-                        "postal_code": "{{Event.EntrySource.postal_code}}",
-                        "country": "{{Event.EntrySource.country}}"
+                        "dataExtension": selectedDE,
+                        "first_name_field": fieldMappings.first_name,
+                        "first_name": `{{Event.${selectedDE}.${fieldMappings.first_name}}}`,
+                        "last_name_field": fieldMappings.last_name,
+                        "last_name": fieldMappings.last_name ? `{{Event.${selectedDE}.${fieldMappings.last_name}}}` : '',
+                        "street_field": fieldMappings.street,
+                        "street": fieldMappings.street ? `{{Event.${selectedDE}.${fieldMappings.street}}}` : '',
+                        "city_field": fieldMappings.city,
+                        "city": fieldMappings.city ? `{{Event.${selectedDE}.${fieldMappings.city}}}` : '',
+                        "state_field": fieldMappings.state,
+                        "state": fieldMappings.state ? `{{Event.${selectedDE}.${fieldMappings.state}}}` : '',
+                        "postal_code_field": fieldMappings.postal_code,
+                        "postal_code": fieldMappings.postal_code ? `{{Event.${selectedDE}.${fieldMappings.postal_code}}}` : '',
+                        "country_field": fieldMappings.country,
+                        "country": fieldMappings.country ? `{{Event.${selectedDE}.${fieldMappings.country}}}` : ''
                     }
                 ];
                 payload['configurationArguments'] = payload['configurationArguments'] || {};
@@ -151,7 +334,7 @@
                 payload['metaData'] = payload['metaData'] || {};
                 payload['metaData'].isConfigured = true;
                 payload['errors'] = null;
-                console.log('Configuration set:', JSON.stringify(payload));
+                console.log('Updated payload:', JSON.stringify(payload));
             }
         }
     </script>
