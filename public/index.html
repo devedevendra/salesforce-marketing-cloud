@@ -56,6 +56,15 @@
                 connection.trigger('done');
             });
 
+            // Add logging for additional events
+            connection.on('updateActivity', function(data) {
+                console.log('updateActivity called with data:', JSON.stringify(data));
+            });
+
+            connection.on('done', function() {
+                console.log('done event triggered');
+            });
+
             function configureActivity() {
                 console.log('Configuring activity');
                 payload['arguments'] = payload['arguments'] || {};
@@ -70,7 +79,7 @@
                 payload['configurationArguments'].save = { configured: true };
                 payload['configurationArguments'].validate = { configured: true };
                 payload['metaData'] = payload['metaData'] || {};
-                payload['metaData'].isConfigured = true; // Explicitly set isConfigured to true
+                payload['metaData'].isConfigured = true;
                 console.log('Configuration set:', JSON.stringify(payload));
             }
         }

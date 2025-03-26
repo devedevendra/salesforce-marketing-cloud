@@ -21,6 +21,7 @@ const verifyJWT = (req, res, next) => {
             console.log('Invalid token:', err.message);
             return res.status(401).json({ error: 'Invalid token' });
         }
+        console.log('Token verified successfully');
         req.decoded = decoded;
         next();
     });
@@ -55,8 +56,12 @@ app.post('/execute', verifyJWT, (req, res) => {
 });
 
 app.post('/publish', verifyJWT, (req, res) => {
-    console.log('Publish endpoint called');
-    res.json({ success: true });
+    console.log('Publish endpoint called with body:', JSON.stringify(req.body));
+    res.json({
+        success: true,
+        configured: true,
+        metaData: { isConfigured: true }
+    });
 });
 
 app.post('/validate', verifyJWT, (req, res) => {
