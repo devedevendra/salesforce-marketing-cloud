@@ -45,7 +45,7 @@ app.get('/config.json', (req, res) => {
         "workflowApiVersion": "1.1",
         "metaData": {
             "icon": "images/pcmlogo.png",
-            "category": "custom",
+            "category": "Messages",
             "isConfigured": false
         },
         "type": "REST",
