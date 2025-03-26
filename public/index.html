@@ -33,36 +33,50 @@
                 console.log('initActivity called with data:', JSON.stringify(data));
                 payload = data || {};
                 configureActivity();
+                console.log('Triggering updateActivity after init');
                 connection.trigger('updateActivity', payload);
             });
 
             connection.on('requestedSave', function() {
                 console.log('requestedSave called');
                 configureActivity();
+                console.log('Triggering updateActivity after save request');
                 connection.trigger('updateActivity', payload);
             });
 
             connection.on('requestedValidate', function() {
                 console.log('requestedValidate called');
                 configureActivity();
+                console.log('Triggering updateActivity before validation');
                 connection.trigger('updateActivity', payload);
+                console.log('Triggering validationFinished');
                 connection.trigger('validationFinished', true);
             });
 
             connection.on('clickedNext', function() {
                 console.log('clickedNext called');
                 configureActivity();
+                console.log('Triggering updateActivity before done');
                 connection.trigger('updateActivity', payload);
+                console.log('Triggering done');
                 connection.trigger('done');
             });
 
-            // Add logging for additional events
+            // Additional Postmonger events for debugging
             connection.on('updateActivity', function(data) {
-                console.log('updateActivity called with data:', JSON.stringify(data));
+                console.log('updateActivity triggered with data:', JSON.stringify(data));
             });
 
             connection.on('done', function() {
                 console.log('done event triggered');
+            });
+
+            connection.on('validationFinished', function(success) {
+                console.log('validationFinished triggered with success:', success);
+            });
+
+            connection.on('error', function(error) {
+                console.error('Postmonger error:', error);
             });
 
             function configureActivity() {
