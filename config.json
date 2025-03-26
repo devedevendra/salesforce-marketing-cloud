@@ -2,7 +2,8 @@
     "workflowApiVersion": "1.1",
     "metaData": {
         "icon": "images/pcmlogo.png",
-        "category": "Messages"
+        "category": "Messages",
+        "isConfigured": false
     },
     "type": "REST",
     "lang": {
@@ -33,17 +34,20 @@
         "save": {
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/save",
             "verb": "POST",
-            "useJwt": true
+            "useJwt": true,
+            "configured": true
         },
         "publish": {
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/publish",
             "verb": "POST",
-            "useJwt": true
+            "useJwt": true,
+            "configured": true
         },
         "validate": {
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/validate",
             "verb": "POST",
-            "useJwt": true
+            "useJwt": true,
+            "configured": true
         }
     },
     "userInterfaces": {
@@ -75,4 +79,3 @@
         }
     }
 }
-

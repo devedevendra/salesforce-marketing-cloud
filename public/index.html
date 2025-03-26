@@ -32,6 +32,10 @@
             connection.on('initActivity', function(data) {
                 console.log('initActivity called with data:', JSON.stringify(data));
                 payload = data || {};
+                if (payload.errors) {
+                    console.log('Clearing pre-existing errors:', JSON.stringify(payload.errors));
+                    payload.errors = null; // Clear any initial errors
+                }
                 configureActivity();
                 console.log('Triggering updateActivity after init');
                 connection.trigger('updateActivity', payload);
@@ -62,7 +66,6 @@
                 connection.trigger('done');
             });
 
-            // Additional Postmonger events for debugging
             connection.on('updateActivity', function(data) {
                 console.log('updateActivity triggered with data:', JSON.stringify(data));
             });
@@ -90,10 +93,27 @@
                     }
                 ];
                 payload['configurationArguments'] = payload['configurationArguments'] || {};
-                payload['configurationArguments'].save = { configured: true };
-                payload['configurationArguments'].validate = { configured: true };
+                payload['configurationArguments'].save = { 
+                    url: "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/save", 
+                    verb: "POST", 
+                    useJwt: true, 
+                    configured: true 
+                };
+                payload['configurationArguments'].validate = { 
+                    url: "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/validate", 
+                    verb: "POST", 
+                    useJwt: true, 
+                    configured: true 
+                };
+                payload['configurationArguments'].publish = { 
+                    url: "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/publish", 
+                    verb: "POST", 
+                    useJwt: true, 
+                    configured: true 
+                };
                 payload['metaData'] = payload['metaData'] || {};
                 payload['metaData'].isConfigured = true;
+                payload['errors'] = null; // Ensure errors are cleared
                 console.log('Configuration set:', JSON.stringify(payload));
             }
         }
