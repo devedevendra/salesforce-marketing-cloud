@@ -1,7 +1,7 @@
 {
     "workflowApiVersion": "1.1",
     "metaData": {
-        "icon": "pcmlogo.png",
+        "icon": "/pcmlogo.png",
         "category": "ACTIVITIES"
     },
     "type": "REST",
