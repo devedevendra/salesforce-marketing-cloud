@@ -9,15 +9,20 @@
     "lang": {
         "en-US": {
             "name": "Contact List Processor",
-            "description": "Automatically processes Name and Email from ContactList Data Extension"
+            "description": "Processes contact details from a Data Extension"
         }
     },
     "arguments": {
         "execute": {
             "inArguments": [
                 {
-                    "name": "{{InteractionDefaults.Name}}",
-                    "email": "{{InteractionDefaults.Email}}"
+                    "first_name": "{{Event.EntrySource.first_name}}",
+                    "last_name": "{{Event.EntrySource.last_name}}",
+                    "street": "{{Event.EntrySource.street}}",
+                    "city": "{{Event.EntrySource.city}}",
+                    "state": "{{Event.EntrySource.state}}",
+                    "postal_code": "{{Event.EntrySource.postal_code}}",
+                    "country": "{{Event.EntrySource.country}}"
                 }
             ],
             "outArguments": [],
@@ -53,8 +58,8 @@
     "userInterfaces": {
         "configModal": {
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/",
-            "height": 300,
-            "width": 500,
+            "height": 500,
+            "width": 600,
             "fullscreen": false
         }
     },
@@ -63,13 +68,38 @@
             "execute": {
                 "inArguments": [
                     {
-                        "name": {
+                        "first_name": {
                             "dataType": "Text",
                             "isNullable": false,
                             "direction": "in"
                         },
-                        "email": {
-                            "dataType": "EmailAddress",
+                        "last_name": {
+                            "dataType": "Text",
+                            "isNullable": false,
+                            "direction": "in"
+                        },
+                        "street": {
+                            "dataType": "Text",
+                            "isNullable": false,
+                            "direction": "in"
+                        },
+                        "city": {
+                            "dataType": "Text",
+                            "isNullable": false,
+                            "direction": "in"
+                        },
+                        "state": {
+                            "dataType": "Text",
+                            "isNullable": false,
+                            "direction": "in"
+                        },
+                        "postal_code": {
+                            "dataType": "Text",
+                            "isNullable": false,
+                            "direction": "in"
+                        },
+                        "country": {
+                            "dataType": "Text",
                             "isNullable": false,
                             "direction": "in"
                         }
