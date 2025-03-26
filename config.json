@@ -1,0 +1,54 @@
+{
+    "workflowApiVersion": "1.1",
+    "metaData": {
+        "icon": "images/icon.svg",
+        "category": "custom"
+    },
+    "type": "REST",
+    "lang": {
+        "en-US": {
+            "name": "Contact Name Activity",
+            "description": "Custom activity to process contact names"
+        }
+    },
+    "arguments": {
+        "execute": {
+            "inArguments": [
+                { "contactName": "{{Contact.Default.FirstName}}" }
+            ],
+            "outArguments": [],
+            "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/execute",
+            "verb": "POST",
+            "body": "",
+            "header": "",
+            "format": "json",
+            "useJwt": true,
+            "timeout": 10000
+        }
+    },
+    "configurationArguments": {
+        "save": {
+            "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/save",
+            "verb": "POST",
+            "useJwt": true
+        },
+        "publish": {
+            "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/publish",
+            "verb": "POST",
+            "useJwt": true
+        },
+        "validate": {
+            "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/validate",
+            "verb": "POST",
+            "useJwt": true
+        }
+    },
+    "userInterfaces": {
+        "configModal": {
+            "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/",
+            "height": 400,
+            "width": 600,
+            "fullscreen": false
+        }
+    }
+}

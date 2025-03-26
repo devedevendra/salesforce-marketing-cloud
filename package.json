@@ -1,0 +1,16 @@
+{
+    "name": "contact-name-activity",
+    "version": "1.0.0",
+    "description": "Marketing Cloud Custom Activity",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "express": "^4.17.1",
+        "jsonwebtoken": "^8.5.1"
+    },
+    "engines": {
+        "node": "14.x"
+    }
+}
