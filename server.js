@@ -9,9 +9,11 @@ app.use(express.static('public'));
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 const verifyJWT = (req, res, next) => {
+    console.log('Request headers:', JSON.stringify(req.headers));
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         console.log('No token provided in request');
+        console.log('No token provided in request',JWT_SECRET);
         return res.status(401).json({ error: 'No token provided' });
     }
 
