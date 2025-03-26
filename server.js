@@ -44,14 +44,14 @@ app.get('/config.json', (req, res) => {
     const configTemplate = {
         "workflowApiVersion": "1.1",
         "metaData": {
-            "icon": "images/icon.svg",
+            "icon": "images/pcmlogo.png",
             "category": "custom",
             "isConfigured": false
         },
         "type": "REST",
         "lang": {
             "en-US": {
-                "name": "Contact List Processor",
+                "name": "PCM Direct Mail",
                 "description": "Dynamically processes contact details from the entry source Data Extension"
             }
         },
