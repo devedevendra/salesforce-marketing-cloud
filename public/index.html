@@ -23,59 +23,53 @@
         } else {
             const connection = new Postmonger.Session();
             let payload = {};
-            let isConfigured = false;
 
             $(window).ready(function() {
+                console.log('Window ready, triggering ready event');
                 connection.trigger('ready');
             });
 
             connection.on('initActivity', function(data) {
+                console.log('initActivity called with data:', JSON.stringify(data));
                 payload = data || {};
-                // Ensure configuration is set
                 configureActivity();
-                isConfigured = true;
                 connection.trigger('updateActivity', payload);
             });
 
             connection.on('requestedSave', function() {
+                console.log('requestedSave called');
                 configureActivity();
                 connection.trigger('updateActivity', payload);
             });
 
             connection.on('requestedValidate', function() {
+                console.log('requestedValidate called');
                 configureActivity();
+                connection.trigger('updateActivity', payload);
                 connection.trigger('validationFinished', true);
             });
 
             connection.on('clickedNext', function() {
-                if (!isConfigured) {
-                    configureActivity();
-                    connection.trigger('updateActivity', payload);
-                }
+                console.log('clickedNext called');
+                configureActivity();
+                connection.trigger('updateActivity', payload);
                 connection.trigger('done');
             });
 
-            // Helper function to set configuration
             function configureActivity() {
-                payload['arguments'] = {
-                    execute: {
-                        inArguments: [
-                            {
-                                "name": "{{InteractionDefaults.Name}}",
-                                "email": "{{InteractionDefaults.Email}}"
-                            }
-                        ],
-                        outArguments: []
+                console.log('Configuring activity');
+                payload['arguments'] = payload['arguments'] || {};
+                payload['arguments'].execute = payload['arguments'].execute || {};
+                payload['arguments'].execute.inArguments = [
+                    {
+                        "name": "{{InteractionDefaults.Name}}",
+                        "email": "{{InteractionDefaults.Email}}"
                     }
-                };
-                payload['configurationArguments'] = {
-                    save: {
-                        configured: true
-                    },
-                    validate: {
-                        configured: true
-                    }
-                };
+                ];
+                payload['configurationArguments'] = payload['configurationArguments'] || {};
+                payload['configurationArguments'].save = { configured: true };
+                payload['configurationArguments'].validate = { configured: true };
+                console.log('Configuration set:', JSON.stringify(payload));
             }
         }
     </script>

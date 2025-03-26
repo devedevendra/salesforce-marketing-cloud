@@ -2,7 +2,7 @@
     "workflowApiVersion": "1.1",
     "metaData": {
         "icon": "public/images/pcmlogo.png",
-        "category": "custom"
+        "category": "Messages"
     },
     "type": "REST",
     "lang": {

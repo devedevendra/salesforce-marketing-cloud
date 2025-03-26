@@ -11,12 +11,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const verifyJWT = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
+        console.log('No token provided');
         return res.status(401).json({ error: 'No token provided' });
     }
 
     const token = authHeader.split(' ')[1];
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
+            console.log('Invalid token:', err.message);
             return res.status(401).json({ error: 'Invalid token' });
         }
         req.decoded = decoded;
@@ -29,6 +31,7 @@ app.get('/config.json', (req, res) => {
 });
 
 app.post('/save', verifyJWT, (req, res) => {
+    console.log('Save endpoint called with body:', JSON.stringify(req.body));
     res.json({
         success: true,
         configured: true
@@ -36,6 +39,7 @@ app.post('/save', verifyJWT, (req, res) => {
 });
 
 app.post('/execute', verifyJWT, (req, res) => {
+    console.log('Execute endpoint called with body:', JSON.stringify(req.body));
     const { inArguments } = req.body;
     const name = inArguments[0].name;
     const email = inArguments[0].email;
@@ -50,10 +54,12 @@ app.post('/execute', verifyJWT, (req, res) => {
 });
 
 app.post('/publish', verifyJWT, (req, res) => {
+    console.log('Publish endpoint called');
     res.json({ success: true });
 });
 
 app.post('/validate', verifyJWT, (req, res) => {
+    console.log('Validate endpoint called with body:', JSON.stringify(req.body));
     res.json({
         success: true,
         configured: true
