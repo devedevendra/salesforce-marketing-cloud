@@ -34,7 +34,8 @@ app.post('/save', verifyJWT, (req, res) => {
     console.log('Save endpoint called with body:', JSON.stringify(req.body));
     res.json({
         success: true,
-        configured: true
+        configured: true,
+        metaData: { isConfigured: true }
     });
 });
 
@@ -62,7 +63,8 @@ app.post('/validate', verifyJWT, (req, res) => {
     console.log('Validate endpoint called with body:', JSON.stringify(req.body));
     res.json({
         success: true,
-        configured: true
+        configured: true,
+        metaData: { isConfigured: true }
     });
 });
 

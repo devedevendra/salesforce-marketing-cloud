@@ -69,6 +69,8 @@
                 payload['configurationArguments'] = payload['configurationArguments'] || {};
                 payload['configurationArguments'].save = { configured: true };
                 payload['configurationArguments'].validate = { configured: true };
+                payload['metaData'] = payload['metaData'] || {};
+                payload['metaData'].isConfigured = true; // Explicitly set isConfigured to true
                 console.log('Configuration set:', JSON.stringify(payload));
             }
         }
