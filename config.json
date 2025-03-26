@@ -1,20 +1,23 @@
 {
     "workflowApiVersion": "1.1",
     "metaData": {
-        "icon": "images/pcmlogo.png",
-        "category": "Custom"
+        "icon": "images/icon.svg",
+        "category": "custom"
     },
     "type": "REST",
     "lang": {
         "en-US": {
-            "name": "JB Activity",
-            "description": "Custom activity to process contact names from Data Extension"
+            "name": "Contact List Processor",
+            "description": "Automatically processes Name and Email from ContactList Data Extension"
         }
     },
     "arguments": {
         "execute": {
             "inArguments": [
-                { "contactName": "{{InteractionDefaults.[contactNameField]}}" }
+                {
+                    "name": "{{InteractionDefaults.Name}}",
+                    "email": "{{InteractionDefaults.Email}}"
+                }
             ],
             "outArguments": [],
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/execute",
@@ -46,8 +49,8 @@
     "userInterfaces": {
         "configModal": {
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/",
-            "height": 400,
-            "width": 600,
+            "height": 300,
+            "width": 500,
             "fullscreen": false
         }
     },
@@ -56,13 +59,13 @@
             "execute": {
                 "inArguments": [
                     {
-                        "contactName": {
+                        "name": {
                             "dataType": "Text",
                             "isNullable": false,
                             "direction": "in"
                         },
-                        "contactNameField": {
-                            "dataType": "Text",
+                        "email": {
+                            "dataType": "EmailAddress",
                             "isNullable": false,
                             "direction": "in"
                         }

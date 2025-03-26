@@ -24,27 +24,25 @@ const verifyJWT = (req, res, next) => {
     });
 };
 
-app.get('/public/config.json', (req, res) => {
+app.get('/config.json', (req, res) => {
     res.sendFile(path.join(__dirname, 'config.json'));
 });
 
 app.post('/save', verifyJWT, (req, res) => {
-    const { contactNameField } = req.body;
-    res.json({
-        success: true,
-        contactNameField: contactNameField
-    });
+    res.json({ success: true });
 });
 
 app.post('/execute', verifyJWT, (req, res) => {
     const { inArguments } = req.body;
-    const contactName = inArguments[0].contactName;
+    const name = inArguments[0].name;
+    const email = inArguments[0].email;
     
-    console.log(`Processing contact: ${contactName}`);
+    console.log(`Processing contact - Name: ${name}, Email: ${email}`);
     
     res.json({
         success: true,
-        contactName: contactName
+        name: name,
+        email: email
     });
 });
 
