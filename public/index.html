@@ -91,6 +91,8 @@
             $(window).ready(function() {
                 console.log('Window ready, triggering ready event');
                 connection.trigger('ready');
+                connection.trigger('requestTokens');
+                connection.trigger('requestEndpoints');
                 connection.trigger('requestSchema');
             });
 
