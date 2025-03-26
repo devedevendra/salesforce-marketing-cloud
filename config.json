@@ -14,7 +14,7 @@
     "arguments": {
         "execute": {
             "inArguments": [
-                { "contactName": "{{Contact.Default.FirstName}}" }
+                { "contactName": "{{ContactList.Default.FirstName}}" }
             ],
             "outArguments": [],
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/execute",
