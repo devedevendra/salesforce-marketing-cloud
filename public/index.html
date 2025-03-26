@@ -122,13 +122,13 @@
 
             connection.on('requestedTokens', function(data) {
                 console.log('requestedTokens received:', JSON.stringify(data));
-                tokens = data;
+                //tokens = data;
             });
 
             connection.on('requestedEndpoints', function(data) {
                 console.log('requestedEndpoints received:', JSON.stringify(data));
-                endpoints = data;
-                fetchDataExtensions();
+                //endpoints = data;
+                //fetchDataExtensions();
             });
 
 
