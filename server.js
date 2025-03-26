@@ -29,7 +29,10 @@ app.get('/config.json', (req, res) => {
 });
 
 app.post('/save', verifyJWT, (req, res) => {
-    res.json({ success: true });
+    res.json({
+        success: true,
+        configured: true
+    });
 });
 
 app.post('/execute', verifyJWT, (req, res) => {
@@ -51,7 +54,10 @@ app.post('/publish', verifyJWT, (req, res) => {
 });
 
 app.post('/validate', verifyJWT, (req, res) => {
-    res.json({ success: true });
+    res.json({
+        success: true,
+        configured: true
+    });
 });
 
 const PORT = process.env.PORT || 3000;

@@ -13,20 +13,50 @@
     <div class="container mt-4">
         <h2>Contact List Processor</h2>
         <p>This activity automatically processes Name and Email from ContactList Data Extension</p>
+        <div id="error" style="color: red; display: none;">Error: Could not load Postmonger. Please check your network connection.</div>
     </div>
 
     <script>
-        const connection = new Postmonger.Session();
-        let payload = {};
+        if (typeof Postmonger === 'undefined') {
+            console.error('Postmonger failed to load');
+            $('#error').show();
+        } else {
+            const connection = new Postmonger.Session();
+            let payload = {};
+            let isConfigured = false;
 
-        $(window).ready(function() {
-            connection.trigger('ready');
-        });
+            $(window).ready(function() {
+                connection.trigger('ready');
+            });
 
-        connection.on('initActivity', function(data) {
-            payload = data || {};
-            // Set default configuration if not already set
-            if (!payload['arguments'] || !payload['arguments'].execute || !payload['arguments'].execute.inArguments) {
+            connection.on('initActivity', function(data) {
+                payload = data || {};
+                // Ensure configuration is set
+                configureActivity();
+                isConfigured = true;
+                connection.trigger('updateActivity', payload);
+            });
+
+            connection.on('requestedSave', function() {
+                configureActivity();
+                connection.trigger('updateActivity', payload);
+            });
+
+            connection.on('requestedValidate', function() {
+                configureActivity();
+                connection.trigger('validationFinished', true);
+            });
+
+            connection.on('clickedNext', function() {
+                if (!isConfigured) {
+                    configureActivity();
+                    connection.trigger('updateActivity', payload);
+                }
+                connection.trigger('done');
+            });
+
+            // Helper function to set configuration
+            function configureActivity() {
                 payload['arguments'] = {
                     execute: {
                         inArguments: [
@@ -34,48 +64,20 @@
                                 "name": "{{InteractionDefaults.Name}}",
                                 "email": "{{InteractionDefaults.Email}}"
                             }
-                        ]
+                        ],
+                        outArguments: []
                     }
                 };
-                connection.trigger('updateActivity', payload);
+                payload['configurationArguments'] = {
+                    save: {
+                        configured: true
+                    },
+                    validate: {
+                        configured: true
+                    }
+                };
             }
-        });
-
-        // Handle save request from Journey Builder
-        connection.on('requestedSave', function() {
-            payload['arguments'] = {
-                execute: {
-                    inArguments: [
-                        {
-                            "name": "{{InteractionDefaults.Name}}",
-                            "email": "{{InteractionDefaults.Email}}"
-                        }
-                    ]
-                }
-            };
-            connection.trigger('updateActivity', payload);
-        });
-
-        // Handle validation request
-        connection.on('requestedValidate', function() {
-            connection.trigger('validationFinished', true);
-        });
-
-        // Handle completion (e.g., clicking "Done")
-        connection.on('clickedNext', function() {
-            payload['arguments'] = {
-                execute: {
-                    inArguments: [
-                        {
-                            "name": "{{InteractionDefaults.Name}}",
-                            "email": "{{InteractionDefaults.Email}}"
-                        }
-                    ]
-                }
-            };
-            connection.trigger('updateActivity', payload);
-            connection.trigger('done');
-        });
+        }
     </script>
 </body>
 </html>

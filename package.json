@@ -1,7 +1,7 @@
 {
-    "name": "contact-name-activity",
+    "name": "contact-list-activity",
     "version": "1.0.0",
-    "description": "Marketing Cloud Custom Activity",
+    "description": "Marketing Cloud Custom Activity for ContactList",
     "main": "server.js",
     "scripts": {
         "start": "node server.js"
