@@ -8,13 +8,13 @@
     "lang": {
         "en-US": {
             "name": "Contact Name Activity",
-            "description": "Custom activity to process contact names"
+            "description": "Custom activity to process contact names from Data Extension"
         }
     },
     "arguments": {
         "execute": {
             "inArguments": [
-                { "contactName": "{{ContactList.Default.FirstName}}" }
+                { "contactName": "{{InteractionDefaults.[contactNameField]}}" }
             ],
             "outArguments": [],
             "url": "https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com/execute",
@@ -49,6 +49,26 @@
             "height": 400,
             "width": 600,
             "fullscreen": false
+        }
+    },
+    "schema": {
+        "arguments": {
+            "execute": {
+                "inArguments": [
+                    {
+                        "contactName": {
+                            "dataType": "Text",
+                            "isNullable": false,
+                            "direction": "in"
+                        },
+                        "contactNameField": {
+                            "dataType": "Text",
+                            "isNullable": false,
+                            "direction": "in"
+                        }
+                    }
+                ]
+            }
         }
     }
 }
