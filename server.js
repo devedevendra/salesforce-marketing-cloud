@@ -3,21 +3,36 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const app = express();
 
-app.use(express.json());
+app.use(express.json()); // Ensures req.body is parsed for JSON or text
+app.use(express.text({ type: 'application/jwt' })); // Parse application/jwt as text
 app.use(express.static('public'));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 const verifyJWT = (req, res, next) => {
     console.log('Request headers:', JSON.stringify(req.headers));
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
+    console.log('Request body:', req.body);
+
+    let token;
+
+    // Check Authorization header first (for compatibility with manual tests)
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    if (authHeader) {
+        token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+        console.log('Token from Authorization header:', token);
+    }
+
+    // If no token in header and Content-Type is application/jwt, use body
+    if (!token && req.headers['content-type'] === 'application/jwt') {
+        token = req.body; // Body should be the raw JWT string
+        console.log('Token from request body (application/jwt):', token);
+    }
+
+    if (!token) {
         console.log('No token provided in request');
-        console.log('No token provided in request',JWT_SECRET);
         return res.status(401).json({ error: 'No token provided' });
     }
 
-    const token = authHeader.split(' ')[1];
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
             console.log('JWT verification failed:', err.message);
@@ -48,8 +63,8 @@ app.post('/save', verifyJWT, (req, res) => {
 app.post('/execute', verifyJWT, (req, res) => {
     console.log('Execute endpoint called with body:', JSON.stringify(req.body));
     const { inArguments } = req.body;
-    const name = inArguments[0].name;
-    const email = inArguments[0].email;
+    const name = inArguments[0].name || 'Unknown';
+    const email = inArguments[0].email || 'Unknown';
     
     console.log(`Processing contact - Name: ${name}, Email: ${email}`);
     const response = {
