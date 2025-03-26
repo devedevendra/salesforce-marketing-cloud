@@ -118,6 +118,20 @@
                 }
             });
 
+            connection.on('requestedTokens', function(data) {
+                console.log('requestedTokens received:', JSON.stringify(data));
+                tokens = data;
+            });
+
+            connection.on('requestedEndpoints', function(data) {
+                console.log('requestedEndpoints received:', JSON.stringify(data));
+                endpoints = data;
+                fetchDataExtensions();
+            });
+
+
+            
+
             connection.on('requestedSchema', function(data) {
                 console.log('requestedSchema received:', JSON.stringify(data));
                 schema = data.schema || [];
