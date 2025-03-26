@@ -25,29 +25,54 @@
 
         connection.on('initActivity', function(data) {
             payload = data || {};
-            // Automatically configure the fields from ContactList
-            payload['arguments'] = payload['arguments'] || {};
-            payload['arguments'].execute = payload['arguments'].execute || {};
-            payload['arguments'].execute.inArguments = [
-                {
-                    "name": "{{InteractionDefaults.Name}}",
-                    "email": "{{InteractionDefaults.Email}}"
+            // Set default configuration if not already set
+            if (!payload['arguments'] || !payload['arguments'].execute || !payload['arguments'].execute.inArguments) {
+                payload['arguments'] = {
+                    execute: {
+                        inArguments: [
+                            {
+                                "name": "{{InteractionDefaults.Name}}",
+                                "email": "{{InteractionDefaults.Email}}"
+                            }
+                        ]
+                    }
+                };
+                connection.trigger('updateActivity', payload);
+            }
+        });
+
+        // Handle save request from Journey Builder
+        connection.on('requestedSave', function() {
+            payload['arguments'] = {
+                execute: {
+                    inArguments: [
+                        {
+                            "name": "{{InteractionDefaults.Name}}",
+                            "email": "{{InteractionDefaults.Email}}"
+                        }
+                    ]
                 }
-            ];
+            };
             connection.trigger('updateActivity', payload);
         });
 
-        // Handle Journey Builder completion
+        // Handle validation request
+        connection.on('requestedValidate', function() {
+            connection.trigger('validationFinished', true);
+        });
+
+        // Handle completion (e.g., clicking "Done")
         connection.on('clickedNext', function() {
-            // Ensure the configuration is set before closing
-            payload['arguments'] = payload['arguments'] || {};
-            payload['arguments'].execute = payload['arguments'].execute || {};
-            payload['arguments'].execute.inArguments = [
-                {
-                    "name": "{{InteractionDefaults.Name}}",
-                    "email": "{{InteractionDefaults.Email}}"
+            payload['arguments'] = {
+                execute: {
+                    inArguments: [
+                        {
+                            "name": "{{InteractionDefaults.Name}}",
+                            "email": "{{InteractionDefaults.Email}}"
+                        }
+                    ]
                 }
-            ];
+            };
             connection.trigger('updateActivity', payload);
             connection.trigger('done');
         });
