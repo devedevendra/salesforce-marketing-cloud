@@ -24,7 +24,7 @@ const verifyJWT = (req, res, next) => {
     });
 };
 
-app.get('/config.json', (req, res) => {
+app.get('/public/config.json', (req, res) => {
     res.sendFile(path.join(__dirname, 'config.json'));
 });
 
