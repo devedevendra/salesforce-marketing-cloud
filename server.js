@@ -288,7 +288,7 @@ app.post('/validate', verifyJWT, (req, res) => {
 
 // Endpoint to get the authentication token
 async function getDesignToken() {
-    if (!AUTH_URL || !CLIENT_ID || !CLIENT_SECRET) {
+    if ( !CLIENT_ID || !CLIENT_SECRET) {
         console.error('AUTH_URL, CLIENT_ID, or CLIENT_SECRET environment variables not set.');
         throw new Error('Authentication credentials not configured on the server.');
     }
