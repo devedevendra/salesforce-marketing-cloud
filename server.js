@@ -324,7 +324,7 @@ async function getDesignToken() {
 }
 
 // New endpoint to fetch designs, protected by JWT verification
-app.get('/getDesigns', verifyJWT, async (req, res) => {
+app.get('/getDesigns',  async (req, res) => {
     console.log('getDesigns endpoint called');
     console.log('Request Headers:', JSON.stringify(req.headers));
 
