@@ -121,7 +121,8 @@ app.get('/config.json', (req, res) => {
                 "url": `${APP_URL}/`,
                 "height": 600,
                 "width": 800,
-                "fullscreen": false
+                "fullscreen": false,
+                "useJwt": true // Add this line!
             }
         },
         "schema": {
