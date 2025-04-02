@@ -13,6 +13,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 const verifyJWT = (req, res, next) => {
+    console.log('Request Headers:', JSON.stringify(req.headers));
     console.log('Verifying JWT for request:', req.method, req.url);
     let token;
     const authHeader = req.headers.authorization || req.headers.Authorization;
