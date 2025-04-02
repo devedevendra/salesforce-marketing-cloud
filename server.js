@@ -9,6 +9,8 @@ app.use(express.text({ type: 'application/jwt' }));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const APP_URL = process.env.APP_URL || 'https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com';
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 const verifyJWT = (req, res, next) => {
     console.log('Verifying JWT for request:', req.method, req.url);
@@ -280,6 +282,70 @@ app.post('/validate', verifyJWT, (req, res) => {
         metaData: { isConfigured: true }
     });
     console.log('Validate endpoint responded with success');
+});
+
+// Endpoint to get the authentication token
+async function getDesignToken() {
+    if (!AUTH_URL || !CLIENT_ID || !CLIENT_SECRET) {
+        console.error('AUTH_URL, CLIENT_ID, or CLIENT_SECRET environment variables not set.');
+        throw new Error('Authentication credentials not configured on the server.');
+    }
+
+    try {
+        const response = await fetch(`${AUTH_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                clientId: CLIENT_ID,
+                clientSecret: CLIENT_SECRET
+            })
+        });
+
+        if (!response.ok) {
+            console.error('Error getting design token:', response.status, response.statusText);
+            throw new Error(`Failed to get design token: ${response.statusText}`);
+        }
+        const data = await response.json();
+        if (data && data.token) { // Assuming the token is in a 'token' field
+            console.log('Design token retrieved successfully');
+            return data.token;
+        } else {
+            console.error('Design token not found in response:', data);
+            throw new Error('Design token not found in authentication response.');
+        }
+    } catch (error) {
+        console.error('Error during design token retrieval:', error);
+        throw error;
+    }
+}
+
+// New endpoint to fetch designs, protected by JWT verification
+app.get('/getDesigns', verifyJWT, async (req, res) => {
+    console.log('getDesigns endpoint called');
+
+    try {
+        const authToken = await getDesignToken();
+        const response = await fetch('https://v3.pcmintegrations.com/design', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (!response.ok) {
+            console.error('Error fetching designs from external API:', response.status, response.statusText);
+            return res.status(response.status).json({ error: `Failed to fetch designs: ${response.statusText}` });
+        }
+        const data = await response.json();
+        res.json(data);
+        console.log('Designs data fetched successfully from external API');
+    } catch (error) {
+        console.error('Error fetching designs:', error);
+        res.status(500).json({ error: `Failed to fetch designs: ${error.message}` });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
