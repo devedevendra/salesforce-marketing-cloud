@@ -294,7 +294,7 @@ async function getDesignToken() {
     }
 
     try {
-        const response = await fetch(`${AUTH_URL}/auth/login`, {
+        const response = await fetch('https://v3.pcmintegrations.com/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
