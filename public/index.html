@@ -226,7 +226,7 @@
                             $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType}</option>`);
                         });
                         $('#error').hide();
-                        $('#designIdSelect').val(selectedDesignId); // Set the selected value if it exists
+                        //$('#designIdSelect').val(selectedDesignId); // Set the selected value if it exists
                     })
                     .catch(error => {
                         console.error('Error fetching designs from backend:', error);
