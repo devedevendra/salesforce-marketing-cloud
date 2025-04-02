@@ -301,8 +301,8 @@ async function getDesignToken() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                clientId: CLIENT_ID,
-                clientSecret: CLIENT_SECRET
+                apiKey: CLIENT_ID,
+                apiSecret: CLIENT_SECRET
             })
         });
 
