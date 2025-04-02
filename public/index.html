@@ -100,7 +100,7 @@
                 connection.trigger('requestTokens');
                 connection.trigger('requestEndpoints');
                 connection.trigger('requestSchema');
-                fetchDesigns(); // Call function to fetch designs
+                
             });
 
             connection.on('initActivity', function(data) {
@@ -124,6 +124,7 @@
                     console.log('Loaded saved DE key:', dataExtensionKey);
                     $('#dataExtensionKey').val(dataExtensionKey);
                     updateFieldSelections();
+                    fetchDesigns(); // Call function to fetch designs
                 }
             });
 
