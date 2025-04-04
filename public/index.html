@@ -223,13 +223,13 @@
                         const designs = data.results || [];
                         const $designSelect = $('#designIdSelect');
                         designs.forEach(design => {
-                            $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType}</option>`);
+                            $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType} - ${design.friendlyName}</option>`);
                         });
                         $('#error').hide();
                         //$('#designIdSelect').val(selectedDesignId); // Set the selected value if it exists
                     })
                     .catch(error => {
-                        console.error('Error fetching designs from backend:', error);
+                                 console.error('Error fetching designs from backend:', error);
                         $('#error').text('Error: Failed to load designs. Please try again later.').show();
                     });
             }
@@ -320,7 +320,8 @@
                         "postal_code_field": fieldMappings.postal_code,
                         "postal_code": fieldMappings.postal_code ? `{{Event.${dataExtensionKey}.${fieldMappings.postal_code}}}` : '',
                         "country_field": fieldMappings.country,
-                        "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : ''
+                        "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : '',
+                        "selectedDesignId" : $('#designIdSelect').val()
                     }
                 ];
                 payload['configurationArguments'] = payload['configurationArguments'] || {};

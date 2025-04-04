@@ -206,6 +206,11 @@ app.get('/config.json', (req, res) => {
                                 "dataType": "Text",
                                 "isNullable": true,
                                 "direction": "in"
+                            },
+                            "selectedDesignId": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
                             }
                         }
                     ]
@@ -231,7 +236,7 @@ app.post('/save', verifyJWT, (req, res) => {
     console.log('Save endpoint responded with success');
 });
 
-app.post('/execute', verifyJWT, (req, res) => {
+app.post('/execute', verifyJWT, async (req, res) => {
     console.log('Execute endpoint called with body:', JSON.stringify(req.body));
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     const { inArguments } = req.decoded;
@@ -248,21 +253,73 @@ app.post('/execute', verifyJWT, (req, res) => {
     const state = args.state || 'Unknown';
     const postalCode = args.postal_code || 'Unknown';
     const country = args.country || 'Unknown';
+    const designId =  parseInt(args.selectedDesignId || 'Unknown');
 
     console.log(`Processing contact - First Name: ${firstName}, Last Name: ${lastName}, Street: ${street}, City: ${city}, State: ${state}, Postal Code: ${postalCode}, Country: ${country}`);
+    try {
+        const authToken = await getDesignToken();
+        const requestBody = {
+            "returnAddress": {
+                "zipCode": "12019",
+                "state": "New York",
+                "lastName": "Zaragoza",
+                "firstName": "Eddie",
+                "city": "Ballston Lake",
+                "address2": "",
+                "address": "4a Premont way"
+            },
+            "recipients": [
+                {
+                    "zipCode": postalCode,
+                    "variables": [
+                        {
+                            "value": "https://scscloud3-dev-ed.develop.my.salesforce.com/ncsphoto/rMlcRI2NUkfch7du079jmHImr6VtiU8vzrEXMITxwi85Jhd1pAvciMtP7aUf-yyCfvaj33g-yz9MqJnoxt-00Q%3D%3D?fromEmail=1", // Replace with your dynamic image URL logic
+                            "key": "DynamicImage"
+                        },
+                        {
+                            "value": firstName,
+                            "key": "fn" // Changed 'fn' to 'firstName' for clarity
+                        }
+                    ],
+                    "state": state,
+                    "lastName": lastName,
+                    "firstName": firstName,
+                    "extRefNbr": "00QDp00000FyQQFMA3", // Replace with your logic for external reference number
+                    "city": city,
+                    "address": street
+                }
+            ],
+            "mailClass": "FirstClass",
+            "globalDesignVariables": [],
+            "designID": designId // Using the dynamic designId from args
+        };
+        const response = await fetch('https://v3.pcmintegrations.com/order/postcard', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(requestBody)
+        });
 
-    const response = {
-        success: true,
-        first_name: firstName,
-        last_name: lastName,
-        street: street,
-        city: city,
-        state: state,
-        postal_code: postalCode,
-        country: country
-    };
-    console.log('Execute endpoint responding with:', JSON.stringify(response));
-    res.json(response);
+        if (!response.ok) {
+            console.error('Error sending postcard order:', response.status, response.statusText);
+            try {
+                const errorData = await response.json();
+                console.error('Error details:', errorData);
+                return res.status(response.status).json({ error: `Failed to send postcard order: ${response.statusText}`, details: errorData });
+            } catch (e) {
+                return res.status(response.status).json({ error: `Failed to send postcard order: ${response.statusText}` });
+            }
+        }
+        const data = await response.json();
+        res.json(data);
+        console.log('Postcard order sent successfully');
+    } catch (error) {
+        console.error('Error sending postcard order:', error);
+        res.status(500).json({ error: `Failed to send postcard order: ${error.message}` });
+    }
+    
 });
 
 app.post('/publish', verifyJWT, (req, res) => {
@@ -331,7 +388,7 @@ app.get('/getDesigns',  async (req, res) => {
 
     try {
         const authToken = await getDesignToken();
-        const response = await fetch('https://v3.pcmintegrations.com/design', {
+        const response = await fetch('https://v3.pcmintegrations.com/design?perPage=1000', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
