@@ -293,10 +293,11 @@ app.post('/execute', verifyJWT, async (req, res) => {
             "globalDesignVariables": [],
             "designID": designId // Using the dynamic designId from args
         };
+        console.log(JSON.stringify(requestBody));
         const response = await fetch('https://v3.pcmintegrations.com/order/postcard', {
             method: 'POST',
             headers: {
-                'Accept': 'application/json',
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify(requestBody)
