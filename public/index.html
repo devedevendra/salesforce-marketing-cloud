@@ -210,8 +210,7 @@
                 console.log('Calling backend proxy /api/proxied-dataextensions...');
 
                 try {
-                    // Use POST to send token and endpoint info securely in the body
-                    const response = await fetch('/api/proxied-dataextensions', { // New endpoint name
+                    fetch(`${window.APP_URL}/api/proxied-dataextensions`,{ // New endpoint name
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -221,23 +220,25 @@
                             token: sfmcToken,
                             restHostUrl: sfmcRestHost
                         })
+                    }).then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        
+                        //$('#designIdSelect').val(selectedDesignId); // Set the selected value if it exists
+                    })
+                    .catch(error => {
+                                 console.error('Error fetching designs from backend:', error);
+                        $('#error').text('Error: Failed to load designs. Please try again later.').show();
                     });
 
-                    $('#deLoadStatus').text(''); // Clear loading text
+                    
+                    
 
-                    if (!response.ok) {
-                        let errorDetails = `Status: ${response.status} ${response.statusText}`;
-                        try {
-                            const errorBody = await response.json();
-                            errorDetails += ` | Details: ${errorBody.details || errorBody.error || JSON.stringify(errorBody)}`;
-                        } catch (e) { /* Ignore */ }
-                        throw new Error(`Failed to fetch DEs via backend proxy. ${errorDetails}`);
-                    }
-
-                    fetchedDEs = await response.json(); // Backend returns the array of DEs
-
-                    console.log(`Successfully fetched ${fetchedDEs.length} DEs via backend proxy.`);
-                    $('#deLoadStatus').text(`Found ${fetchedDEs.length} Data Extensions.`);
+                    
 
                     // ... rest of your validation/UI logic ...
 
