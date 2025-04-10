@@ -73,6 +73,87 @@
     </div>
 
     <script>
+        // --- Start: Added getDataExtensionInfo function ---
+        /**
+         * Fetches Data Extension names and keys from Salesforce Marketing Cloud using REST API.
+         * Intended for use within a Custom Activity UI using postmonger.
+         *
+         * @param {string} token - The short-lived access token (from connection.on('requestedTokens')).
+         * @param {string} restHostUrl - The REST API base URL (e.g., from connection.on('requestedEndpoints').fuelapiRestHost).
+         * @param {number} [pageSize=200] - Optional: How many DEs to fetch per page (max usually 2500, but 200 is reasonable for UI).
+         * @returns {Promise<Array<{name: string, customerKey: string}>>} A promise that resolves with an array of Data Extension objects
+         * (containing name and customerKey) or rejects with an error.
+         */
+         async function getDataExtensionInfo(token, restHostUrl, pageSize = 200) {
+            // Ensure the base URL doesn't end with a slash, then append the API path
+            const baseUrl = restHostUrl.endsWith('/') ? restHostUrl.slice(0, -1) : restHostUrl;
+            // Use the /data/v1/dataextensions endpoint. Add paging and ordering.
+            const apiUrl = `${baseUrl}/data/v1/dataextensions?$pagesize=${pageSize}&$orderBy=Name`; // Order by name for better UI display
+  
+            console.log(`Workspaceing Data Extensions from: ${apiUrl}`); // Helpful for debugging
+  
+            if (!token || !restHostUrl) {
+               console.error('Missing token or restHostUrl for getDataExtensionInfo');
+               return Promise.reject(new Error('Authentication token or REST host URL is missing.'));
+            }
+  
+            try {
+              const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                  // Crucial: Authorization header with Bearer token
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+  
+              console.log(`Data Extension fetch response status: ${response.status}`); // Debugging
+  
+              if (!response.ok) {
+                let errorDetails = `Status: ${response.status} ${response.statusText}`;
+                try {
+                  // Try to get more specific error message from SFMC if available
+                  const errorBody = await response.json();
+                  errorDetails += ` | Body: ${JSON.stringify(errorBody)}`;
+                } catch (e) {
+                  // If parsing error body fails, just use the status text
+                }
+                throw new Error(`Failed to fetch Data Extensions. ${errorDetails}`);
+              }
+  
+              // Parse the JSON response
+              const data = await response.json();
+              // console.log('Received DE data:', data); // Debugging - careful if you have many DEs
+  
+              // Check if the expected 'items' array exists
+               if (!data || !Array.isArray(data.items)) {
+                   console.warn('Unexpected API response structure:', data);
+                   // If the API indicates count is 0, it's valid, return empty array
+                   if (data && data.count === 0) {
+                       return [];
+                   }
+                   // Otherwise, the structure is wrong
+                   throw new Error('Unexpected response structure received from Data Extension API.');
+              }
+  
+              // Extract only the name and customerKey from each item in the response
+              const dataExtensions = data.items.map(item => ({
+                name: item.name,
+                customerKey: item.customerKey
+                // You could add item.description here if needed for the UI
+              }));
+  
+              console.log(`Successfully fetched ${dataExtensions.length} Data Extensions.`);
+              return dataExtensions;
+  
+            } catch (error) {
+              console.error('Error during Data Extension fetch:', error);
+              // Re-throw the error so the calling code can handle it (e.g., show UI message)
+              throw error;
+            }
+          }
+          // --- End: Added getDataExtensionInfo function ---
+
+
         if (typeof Postmonger === 'undefined') {
             console.error('Postmonger failed to load');
             $('#error').text('Error: Could not load Postmonger. Please check your network connection.').show();
@@ -83,6 +164,8 @@
             const connection = new Postmonger.Session();
             let payload = {};
             let schema = [];
+            let tokens ={};
+            let endpoints = {};
             let dataExtensionKey = '';
             let fieldMappings = {
                 first_name: '',
@@ -130,13 +213,19 @@
 
             connection.on('requestedTokens', function(data) {
                 console.log('requestedTokens received:', JSON.stringify(data));
-                //tokens = data;
+                tokens = data;
             });
 
             connection.on('requestedEndpoints', function(data) {
                 console.log('requestedEndpoints received:', JSON.stringify(data));
-                //endpoints = data;
+                endpoints = data;
                 //fetchDataExtensions();
+                try{
+                    const deList =  getDataExtensionInfo(tokens.token, endpoints.restTSSD);
+                console.log(deList);
+                }catch(e){
+                    console.log(e);
+                }
             });
 
 
@@ -235,6 +324,9 @@
             }
 
             function populateFieldDropdowns() {
+
+                
+
                 console.log('Populating field dropdowns for schema:', JSON.stringify(schema));
                 const fields = schema
                     .filter(item => item.key.includes(dataExtensionKey))
