@@ -73,85 +73,7 @@
     </div>
 
     <script>
-        // --- Start: Added getDataExtensionInfo function ---
-        /**
-         * Fetches Data Extension names and keys from Salesforce Marketing Cloud using REST API.
-         * Intended for use within a Custom Activity UI using postmonger.
-         *
-         * @param {string} token - The short-lived access token (from connection.on('requestedTokens')).
-         * @param {string} restHostUrl - The REST API base URL (e.g., from connection.on('requestedEndpoints').fuelapiRestHost).
-         * @param {number} [pageSize=200] - Optional: How many DEs to fetch per page (max usually 2500, but 200 is reasonable for UI).
-         * @returns {Promise<Array<{name: string, customerKey: string}>>} A promise that resolves with an array of Data Extension objects
-         * (containing name and customerKey) or rejects with an error.
-         */
-         async function getDataExtensionInfo(token, restHostUrl, pageSize = 200) {
-            // Ensure the base URL doesn't end with a slash, then append the API path
-            const baseUrl = restHostUrl.endsWith('/') ? restHostUrl.slice(0, -1) : restHostUrl;
-            // Use the /data/v1/dataextensions endpoint. Add paging and ordering.
-            const apiUrl = `${baseUrl}/data/v1/dataextensions?$pagesize=${pageSize}&$orderBy=Name`; // Order by name for better UI display
-  
-            console.log(`Workspaceing Data Extensions from: ${apiUrl}`); // Helpful for debugging
-  
-            if (!token || !restHostUrl) {
-               console.error('Missing token or restHostUrl for getDataExtensionInfo');
-               return Promise.reject(new Error('Authentication token or REST host URL is missing.'));
-            }
-  
-            try {
-              const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                  // Crucial: Authorization header with Bearer token
-                  'Authorization': `Bearer ${token}`
-                }
-              });
-  
-              console.log(`Data Extension fetch response status: ${response.status}`); // Debugging
-  
-              if (!response.ok) {
-                let errorDetails = `Status: ${response.status} ${response.statusText}`;
-                try {
-                  // Try to get more specific error message from SFMC if available
-                  const errorBody = await response.json();
-                  errorDetails += ` | Body: ${JSON.stringify(errorBody)}`;
-                } catch (e) {
-                  // If parsing error body fails, just use the status text
-                }
-                throw new Error(`Failed to fetch Data Extensions. ${errorDetails}`);
-              }
-  
-              // Parse the JSON response
-              const data = await response.json();
-              // console.log('Received DE data:', data); // Debugging - careful if you have many DEs
-  
-              // Check if the expected 'items' array exists
-               if (!data || !Array.isArray(data.items)) {
-                   console.warn('Unexpected API response structure:', data);
-                   // If the API indicates count is 0, it's valid, return empty array
-                   if (data && data.count === 0) {
-                       return [];
-                   }
-                   // Otherwise, the structure is wrong
-                   throw new Error('Unexpected response structure received from Data Extension API.');
-              }
-  
-              // Extract only the name and customerKey from each item in the response
-              const dataExtensions = data.items.map(item => ({
-                name: item.name,
-                customerKey: item.customerKey
-                // You could add item.description here if needed for the UI
-              }));
-  
-              console.log(`Successfully fetched ${dataExtensions.length} Data Extensions.`);
-              return dataExtensions;
-  
-            } catch (error) {
-              console.error('Error during Data Extension fetch:', error);
-              // Re-throw the error so the calling code can handle it (e.g., show UI message)
-              throw error;
-            }
-          }
-          // --- End: Added getDataExtensionInfo function ---
+        
 
 
         if (typeof Postmonger === 'undefined') {
@@ -268,10 +190,61 @@
                 console.log("Using Endpoint:", sfmcRestHost);
 
                 try{
-                    const deList =  getDataExtensionInfo(tokens.token, endpoints.restTSSD);
-                    console.log(deList);
+                    loadDataExtensionsViaBackendProxy();
                 }catch(e){
                     console.log(e);
+                }
+            }
+
+
+            // In index.html, inside loadDataExtensions or similar
+
+            async function loadDataExtensionsViaBackendProxy() {
+                if (!sfmcToken || !sfmcRestHost) {
+                    console.error('Cannot call backend proxy: Token or REST Host missing.');
+                    $('#error').text('Cannot fetch Data Extensions: Missing credentials.').show();
+                    return;
+                }
+
+                $('#deLoadStatus').text('Loading Data Extensions via backend...');
+                console.log('Calling backend proxy /api/proxied-dataextensions...');
+
+                try {
+                    // Use POST to send token and endpoint info securely in the body
+                    const response = await fetch('/api/proxied-dataextensions', { // New endpoint name
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // Add any CSRF or session headers if your backend requires them
+                        },
+                        body: JSON.stringify({
+                            token: sfmcToken,
+                            restHostUrl: sfmcRestHost
+                        })
+                    });
+
+                    $('#deLoadStatus').text(''); // Clear loading text
+
+                    if (!response.ok) {
+                        let errorDetails = `Status: ${response.status} ${response.statusText}`;
+                        try {
+                            const errorBody = await response.json();
+                            errorDetails += ` | Details: ${errorBody.details || errorBody.error || JSON.stringify(errorBody)}`;
+                        } catch (e) { /* Ignore */ }
+                        throw new Error(`Failed to fetch DEs via backend proxy. ${errorDetails}`);
+                    }
+
+                    fetchedDEs = await response.json(); // Backend returns the array of DEs
+
+                    console.log(`Successfully fetched ${fetchedDEs.length} DEs via backend proxy.`);
+                    $('#deLoadStatus').text(`Found ${fetchedDEs.length} Data Extensions.`);
+
+                    // ... rest of your validation/UI logic ...
+
+                } catch (error) {
+                    console.error('Error calling backend proxy for DEs:', error);
+                    $('#deLoadStatus').text('Error loading DE list.');
+                    $('#error').text(`Error loading Data Extension list: ${error.message}`).show();
                 }
             }
 
