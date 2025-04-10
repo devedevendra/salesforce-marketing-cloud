@@ -208,26 +208,75 @@
                     $('#dataExtensionKey').val(dataExtensionKey);
                     updateFieldSelections();
                     fetchDesigns(); // Call function to fetch designs
-                    try{
-                        const deList =  getDataExtensionInfo(tokens.token, endpoints.restTSSD);
-                        console.log(deList);
-                    }catch(e){
-                        console.log(e);
-                    }
+                    
                 }
             });
 
             connection.on('requestedTokens', function(data) {
                 console.log('requestedTokens received:', JSON.stringify(data));
                 tokens = data;
+                if (tokens && tokens.token) {
+                    sfmcToken = tokens.token; // Store the token
+            
+                    // Check if endpoints are already available
+                    if (sfmcRestHost) {
+                        runWhenReady(); // Call your function
+                    }
+                } else {
+                    console.error('Invalid or missing token in requestedTokens data:', tokens);
+                    // Handle error appropriately, maybe show UI message
+                    $('#error').text('Error: Failed to receive valid authentication token.').show();
+                }
             });
 
             connection.on('requestedEndpoints', function(data) {
                 console.log('requestedEndpoints received:', JSON.stringify(data));
                 endpoints = data;
+                if (endpoints && endpoints.restTSSD) {
+                    sfmcRestHost = endpoints.restTSSD; // Store the REST endpoint
+            
+                    // Check if token is already available
+                    if (sfmcToken) {
+                        runWhenReady(); // Call your function
+                    }
+                } else {
+                    console.error('Invalid or missing fuelapiRestHost in requestedEndpoints data:', endpoints);
+                     // Handle error appropriately, maybe show UI message
+                    $('#error').text('Error: Failed to receive valid API endpoint information.').show();
+                }
                 //fetchDataExtensions();
                 
             });
+
+
+            // 1. Define variables in a scope accessible by both listeners
+            let sfmcToken;
+            let sfmcRestHost;
+            let initialDataLoaded = false; // Flag to prevent running your function multiple times
+
+            // 2. Define the function you want to call when both are ready
+            //    (This function will contain the logic that needs both token and endpoint)
+            function runWhenReady() {
+                // Ensure this runs only once
+                if (initialDataLoaded) {
+                    return;
+                }
+                initialDataLoaded = true; // Set the flag
+
+                console.log("Tokens and Endpoints are both available!");
+                console.log("Using Token:", !!sfmcToken); // Log true/false if token exists
+                console.log("Using Endpoint:", sfmcRestHost);
+
+                try{
+                    const deList =  getDataExtensionInfo(tokens.token, endpoints.restTSSD);
+                    console.log(deList);
+                }catch(e){
+                    console.log(e);
+                }
+            }
+
+
+            
 
 
             
