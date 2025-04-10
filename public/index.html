@@ -208,6 +208,12 @@
                     $('#dataExtensionKey').val(dataExtensionKey);
                     updateFieldSelections();
                     fetchDesigns(); // Call function to fetch designs
+                    try{
+                        const deList =  getDataExtensionInfo(tokens.token, endpoints.restTSSD);
+                        console.log(deList);
+                    }catch(e){
+                        console.log(e);
+                    }
                 }
             });
 
@@ -220,12 +226,7 @@
                 console.log('requestedEndpoints received:', JSON.stringify(data));
                 endpoints = data;
                 //fetchDataExtensions();
-                try{
-                    const deList =  getDataExtensionInfo(tokens.token, endpoints.restTSSD);
-                console.log(deList);
-                }catch(e){
-                    console.log(e);
-                }
+                
             });
 
 
