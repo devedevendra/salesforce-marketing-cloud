@@ -395,8 +395,8 @@
             function showDesignPreview(designId) {
                 const selectedDesign = designsData.find(design => design.designID === designId);
                 const $previewDiv = $('#designPreview');
-                const $pdfContainer = $('#pdfContainer');
-                const $pdfViewer = $('#pdfViewer');
+                const $pdfContainer = $('#pdfViewer');
+                const $pdfViewer = $('#pdfFrame');
                 const $imageCarousel = $('#imageCarousel');
                 $imageCarousel.empty().hide();
                 $pdfContainer.hide();
