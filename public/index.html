@@ -9,6 +9,29 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/postmonger@0.0.16/postmonger.min.js"></script>
     <!-- APP_URL -->
+    <style>
+        #designPreview {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none; /* Initially hidden */
+        }
+
+        #designPreview iframe, #designPreview img {
+            max-width: 100%;
+            height: auto;
+            display: block; /* Prevent extra space below inline elements */
+            margin: 10px auto; /* Center images/iframes */
+        }
+
+        .owl-carousel .item {
+            text-align: center;
+        }
+
+        .owl-carousel .item img {
+            display: inline-block; /* Center images in carousel items */
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-4">
@@ -68,6 +91,14 @@
                     <option value="">-- Select a Design --</option>
                 </select>
             </div>
+            <div id="designPreview">
+                <h5>Design Preview:</h5>
+                <div id="pdfViewer" style="display: none;">
+                    <iframe id="pdfFrame" src="" width="100%" height="500px"></iframe>
+                </div>
+                <div id="imageCarousel" class="owl-carousel owl-theme" style="display: none;">
+                    </div>
+            </div>
             <!--button type="button" class="btn btn-primary" id="saveButton">Save</button-->
         </form>
     </div>
@@ -98,6 +129,7 @@
                 postal_code: '',
                 country: ''
             };
+            let designsData = []; // To store the received designs data
 
             $(window).ready(function() {
                 console.log('Window ready, triggering ready event');
@@ -190,7 +222,7 @@
                 console.log("Using Endpoint:", sfmcRestHost);
 
                 try{
-                    loadDataExtensionsViaBackendProxy();
+                    //loadDataExtensionsViaBackendProxy();
                 }catch(e){
                     console.log(e);
                 }
@@ -333,19 +365,66 @@
                     })
                     .then(data => {
                         console.log('Designs data received from backend:', JSON.stringify(data));
-                        const designs = data.results || [];
+                        designsData = data.results || []; // Store the designs data
                         const $designSelect = $('#designIdSelect');
-                        designs.forEach(design => {
+                        designsData.forEach(design => {
                             $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType} - ${design.friendlyName}</option>`);
                         });
                         $('#error').hide();
-                        //$('#designIdSelect').val(selectedDesignId); // Set the selected value if it exists
+                        if (selectedDesignId) {
+                            $designSelect.val(selectedDesignId);
+                            showDesignPreview(selectedDesignId); // Show preview if a design is pre-selected
+                        }
                     })
                     .catch(error => {
                                  console.error('Error fetching designs from backend:', error);
                         $('#error').text('Error: Failed to load designs. Please try again later.').show();
                     });
             }
+
+
+            $('#designIdSelect').on('change', function() {
+                const selectedDesignId = $(this).val();
+                showDesignPreview(selectedDesignId);
+            });
+
+            function showDesignPreview(designId) {
+                const selectedDesign = designsData.find(design => design.designID === designId);
+                const $previewDiv = $('#designPreview');
+                const $pdfContainer = $('#pdfContainer');
+                const $pdfViewer = $('#pdfViewer');
+                const $imageCarousel = $('#imageCarousel');
+                $imageCarousel.empty().hide();
+                $pdfContainer.hide();
+                $previewDiv.hide();
+
+                if (selectedDesign) {
+                    $previewDiv.show();
+                    if (selectedDesign.productType === 'snapapart' || selectedDesign.productType === 'letter') {
+                        if (selectedDesign.proofPDF) {
+                            $pdfViewer.attr('src', selectedDesign.proofPDF);
+                            $pdfContainer.show();
+                        }
+                    } else if (selectedDesign.productType === 'postcard') {
+                        if (selectedDesign.proofFront) {
+                            $('<img class="item" src="' + selectedDesign.proofFront + '">').appendTo($imageCarousel);
+                        }
+                        if (selectedDesign.proofBack) {
+                            $('<img class="item" src="' + selectedDesign.proofBack + '">').appendTo($imageCarousel);
+                        }
+                        if ($imageCarousel.children().length > 0) {
+                            $imageCarousel.show();
+                            $imageCarousel.owlCarousel({
+                                loop: false,
+                                margin: 10,
+                                nav: true,
+                                items: 1
+                            });
+                        }
+                    }
+                }
+            }
+
 
             function populateFieldDropdowns() {
 
