@@ -15,54 +15,71 @@
     <!-- APP_URL -->
     <style>
         /* Existing styles */
-        #designPreviewModal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-        }
+    #designPreviewModal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
 
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
-        }
+    .modal-content {
+        background-color: #fefefe;
+        /* margin: 15% auto;  15% from the top and centered - REMOVED */
+        padding: 20px;
+        border: 1px solid #888;
+        /* width: 80%;  Could be more or less, depending on screen size - REMOVED */
 
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
+        /* Fullscreen modifications */
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        margin: 0;   /* No margin */
+        border: none; /* No border */
+        border-radius: 0; /* No rounded corners */
+    }
 
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
+    .close-button {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
 
-        #pdfViewerModal {
-            width: 100%;
-            height: 500px; /* Adjust as needed */
-            border: 1px solid #ddd;
-        }
+    .close-button:hover,
+    .close-button:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
 
-        .carousel-container-modal {
-            width: 100%;
-        }
+    #pdfViewerModal {
+        width: 100%;
+        height: calc(100% - 60px); /* Adjust as needed, subtract header height */
+        border: none;
+    }
 
-        .carousel-container-modal img {
-            max-width: 100%;
-            height: auto;
-        }
+    #pdfViewerContainerModal {
+        height: calc(100% - 60px); /* Match iframe height */
+    }
+
+    #imageCarouselModal.owl-carousel {
+        height: calc(100% - 60px); /* Adjust carousel height */
+    }
+
+    .carousel-container-modal {
+        width: 100%;
+        height: 100%;
+    }
+
+    .carousel-container-modal img {
+        max-width: 100%;
+        max-height: 100%; /* Ensure images fit within the carousel */
+        object-fit: contain; /* Preserve aspect ratio and fit */
+    }
     </style>
 </head>
 <body>

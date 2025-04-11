@@ -122,8 +122,8 @@ app.get('/config.json', (req, res) => {
         "userInterfaces": {
             "configModal": {
                 "url": `${APP_URL}/`,
-                "height": 800,
-                "width": 1200,
+                "height": 600,
+                "width": 800,
                 "fullscreen": true,
                 "useJwt": true // Add this line!
             }
