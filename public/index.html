@@ -43,10 +43,10 @@
         <p>Map fields from the entry source Data Extension to process.</p>
         <div id="error" style="color: red; display: none;"></div>
         <form id="configForm">
-            <div class="form-group">
+            <!--div class="form-group">
                 <label>Data Extension Key:</label>
                 <input type="text" class="form-control" id="dataExtensionKey" readonly>
-            </div>
+            </div-->
             <div class="form-group">
                 <label for="firstNameField">First Name Field:</label>
                 <select class="form-control" id="firstNameField" name="firstNameField">
@@ -389,7 +389,7 @@
 
             $('#designIdSelect').on('change', function() {
                 const selectedDesignId = $(this).val();
-                showDesignPreview(selectedDesignId);
+                showDesignPreview(parseInt(selectedDesignId));
             });
 
             function showDesignPreview(designId) {
