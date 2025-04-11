@@ -371,10 +371,10 @@
                             $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType} - ${design.friendlyName}</option>`);
                         });
                         $('#error').hide();
-                        if (selectedDesignId) {
+                        /*if (selectedDesignId) {
                             $designSelect.val(selectedDesignId);
                             showDesignPreview(selectedDesignId); // Show preview if a design is pre-selected
-                        }
+                        }*/
                     })
                     .catch(error => {
                                  console.error('Error fetching designs from backend:', error);
