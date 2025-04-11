@@ -14,26 +14,54 @@
     
     <!-- APP_URL -->
     <style>
-        #designPreview {
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            display: none; /* Initially hidden */
+        /* Existing styles */
+        #designPreviewModal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
         }
 
-        #designPreview iframe, #designPreview img {
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #pdfViewerModal {
+            width: 100%;
+            height: 500px; /* Adjust as needed */
+            border: 1px solid #ddd;
+        }
+
+        .carousel-container-modal {
+            width: 100%;
+        }
+
+        .carousel-container-modal img {
             max-width: 100%;
             height: auto;
-            display: block; /* Prevent extra space below inline elements */
-            margin: 10px auto; /* Center images/iframes */
-        }
-
-        .owl-carousel .item {
-            text-align: center;
-        }
-
-        .owl-carousel .item img {
-            display: inline-block; /* Center images in carousel items */
         }
     </style>
 </head>
@@ -95,18 +123,21 @@
                     <option value="">-- Select a Design --</option>
                 </select>
             </div>
-            <div id="designPreview">
-                <h5>Design Preview:</h5>
-                <div id="pdfViewer" style="display: none;">
-                    <iframe id="pdfFrame" src="" width="100%" height="500px"></iframe>
-                </div>
-                <div id="imageCarousel" class="owl-carousel owl-theme" style="display: none;">
-                    </div>
-            </div>
+            
             <!--button type="button" class="btn btn-primary" id="saveButton">Save</button-->
         </form>
     </div>
-
+    <div id="designPreviewModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h5>Design Preview:</h5>
+            <div id="pdfViewerContainerModal" style="display: none;">
+                <iframe id="pdfViewerModal" src="" frameborder="0"></iframe>
+            </div>
+            <div id="imageCarouselModal" class="owl-carousel owl-theme" style="display: none;">
+            </div>
+        </div>
+    </div>
     <script>
         
 
@@ -134,6 +165,8 @@
                 country: ''
             };
             let designsData = []; // To store the received designs data
+            const modal = document.getElementById("designPreviewModal");
+            const closeButton = document.querySelector(".close-button");
 
             $(window).ready(function() {
                 console.log('Window ready, triggering ready event');
@@ -141,6 +174,28 @@
                 connection.trigger('requestTokens');
                 connection.trigger('requestEndpoints');
                 connection.trigger('requestSchema');
+
+                // Close modal when clicking outside
+                window.addEventListener('click', function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                        // Optionally stop carousel autoplay if it was active
+                        const $imageCarouselModal = $('#imageCarouselModal');
+                        if ($imageCarouselModal.hasClass('owl-loaded')) {
+                            $imageCarouselModal.trigger('stop.owl.autoplay');
+                        }
+                    }
+                });
+
+                // Close modal when clicking the close button
+                closeButton.addEventListener('click', function() {
+                    modal.style.display = "none";
+                    // Optionally stop carousel autoplay if it was active
+                    const $imageCarouselModal = $('#imageCarouselModal');
+                    if ($imageCarouselModal.hasClass('owl-loaded')) {
+                        $imageCarouselModal.trigger('stop.owl.autoplay');
+                    }
+                });
                 
             });
 
@@ -392,38 +447,41 @@
                 showDesignPreview(parseInt(selectedDesignId));
             });
 
-            function showDesignPreview(designId) {
+            function showDesignPreviewModal(designId) {
                 const selectedDesign = designsData.find(design => design.designID === designId);
-                const $previewDiv = $('#designPreview');
-                const $pdfContainer = $('#pdfViewer');
-                const $pdfViewer = $('#pdfFrame');
-                const $imageCarousel = $('#imageCarousel');
-                $imageCarousel.empty().hide();
-                $pdfContainer.hide();
-                $previewDiv.hide();
-
+                const $pdfViewerContainerModal = $('#pdfViewerContainerModal');
+                const $pdfViewerModal = $('#pdfViewerModal');
+                const $imageCarouselModal = $('#imageCarouselModal');
+    
+                $imageCarouselModal.empty().hide();
+                $pdfViewerContainerModal.hide();
+                modal.style.display = "block"; // Show the modal
+    
                 if (selectedDesign) {
-                    $previewDiv.show();
                     if (selectedDesign.productType === 'snapapart' || selectedDesign.productType === 'letter') {
                         if (selectedDesign.proofPDF) {
-                            $pdfViewer.attr('src', selectedDesign.proofPDF);
-                            $pdfContainer.show();
+                            $pdfViewerModal.attr('src', selectedDesign.proofPDF);
+                            $pdfViewerContainerModal.show();
                         }
                     } else if (selectedDesign.productType === 'postcard') {
                         if (selectedDesign.proofFront) {
-                            $('<img class="item" src="' + selectedDesign.proofFront + '">').appendTo($imageCarousel);
+                            $('<img class="item" src="' + selectedDesign.proofFront + '">').appendTo($imageCarouselModal);
                         }
                         if (selectedDesign.proofBack) {
-                            $('<img class="item" src="' + selectedDesign.proofBack + '">').appendTo($imageCarousel);
+                            $('<img class="item" src="' + selectedDesign.proofBack + '">').appendTo($imageCarouselModal);
                         }
-                        if ($imageCarousel.children().length > 0) {
-                            $imageCarousel.show();
-                            $imageCarousel.owlCarousel({
-                                loop: false,
-                                margin: 10,
-                                nav: true,
-                                items: 1
-                            });
+                        if ($imageCarouselModal.children().length > 0) {
+                            $imageCarouselModal.show();
+                            if (typeof $imageCarouselModal.owlCarousel === 'function') {
+                                $imageCarouselModal.owlCarousel({
+                                    loop: false,
+                                    margin: 10,
+                                    nav: true,
+                                    items: 1
+                                });
+                            } else {
+                                console.error('Owl Carousel function not found. Ensure the script is loaded correctly.');
+                            }
                         }
                     }
                 }
