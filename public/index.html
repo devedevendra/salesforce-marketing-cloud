@@ -444,7 +444,7 @@
 
             $('#designIdSelect').on('change', function() {
                 const selectedDesignId = $(this).val();
-                showDesignPreview(parseInt(selectedDesignId));
+                showDesignPreviewModal(parseInt(selectedDesignId));
             });
 
             function showDesignPreviewModal(designId) {
