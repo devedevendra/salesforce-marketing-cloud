@@ -245,8 +245,8 @@
             connection.on('requestedTokens', function(data) {
                 console.log('requestedTokens received:', JSON.stringify(data));
                 tokens = data;
-                if (tokens && tokens.token) {
-                    sfmcToken = tokens.token; // Store the token
+                if (tokens && tokens.fuel2token) {
+                    sfmcToken = tokens.fuel2token; // Store the token
             
                     // Check if endpoints are already available
                     if (sfmcRestHost) {
@@ -262,8 +262,8 @@
             connection.on('requestedEndpoints', function(data) {
                 console.log('requestedEndpoints received:', JSON.stringify(data));
                 endpoints = data;
-                if (endpoints && endpoints.restTSSD) {
-                    sfmcRestHost = endpoints.restTSSD; // Store the REST endpoint
+                if (endpoints && endpoints.fuelapiRestHost) {
+                    sfmcRestHost = endpoints.fuelapiRestHost; // Store the REST endpoint
             
                     // Check if token is already available
                     if (sfmcToken) {
@@ -298,7 +298,7 @@
                 console.log("Using Endpoint:", sfmcRestHost);
 
                 try{
-                    //loadDataExtensionsViaBackendProxy();
+                    loadDataExtensionsViaBackendProxy();
                 }catch(e){
                     console.log(e);
                 }
