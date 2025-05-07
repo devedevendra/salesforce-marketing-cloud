@@ -456,16 +456,16 @@
                 $('#error').text('Postmonger error: ' + error).show();
             });
 
-            function fetchDesigns(token) {
+            async function fetchDesigns(authToken) {
                 console.log('Fetching designs from backend (/getDesigns)');
-                    fetch(`${window.APP_URL}/getDesigns`,{ // New endpoint name
+                    await fetch(`${window.APP_URL}/getDesigns`,{ // New endpoint name
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             // Add any CSRF or session headers if your backend requires them
                         },
                         body: JSON.stringify({
-                            token: token 
+                            token: authToken 
                         })
                     })
                     .then(response => {
