@@ -304,60 +304,82 @@
 
             async function verifyAuth() {
                 if (!sfmcMID) {
-                    console.error('Cannot call backend proxy: MID missing.');
-                    $('#error').text('Cannot fetch Data Extensions: MID missing.').show();
+                    console.error('Cannot verify authentication: MID missing.');
+                    // Ensure error div is visible and set text
+                    $('#error').text('Verification failed: MID is missing.').show();
+                    $('#deLoadStatus').hide(); // Hide loading status if it was visible
                     return;
                 }
-
-                $('#deLoadStatus').text('Loading...');
-                console.log('Calling /api/verify s...');
-
+            
+                // Hide previous errors and set initial loading status
+                $('#error').hide();
+                $('#deLoadStatus').text('Verifying authentication...').show();
+                console.log('Calling /api/verify...'); // Corrected console log message
+            
                 try {
-                    fetch(`${window.APP_URL}/api/verify`,{ // New endpoint name
+                    const response = await fetch(`${window.APP_URL}/api/verify`, { // New endpoint name
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             // Add any CSRF or session headers if your backend requires them
                         },
                         body: JSON.stringify({
-                            mid: sfmcMID 
+                            mid: sfmcMID
                         })
-                    }).then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(result => {
-                        
-                        // You can then use the 'result' object as needed
-                        if (result.success && result.existingUser) {
-                            console.log("Login successful. Token:", result.token);
-                            //get designs
-                            fetchDesigns(result.token); 
-                        } else if (result.success && !result.existingUser) {
-                            console.log("User not found.");
-                            //show prompt to ask for api key , secret & JWT token
-                        } else {
-                            console.error("Login failed:", result.message, "Error Code:", result.errorCode);
-                        }
-                    })
-                    .catch(error => {
-                                 console.error('Error fetching designs from backend:', error);
-                        $('#error').text('Error: Failed to load designs. Please try again later.').show();
                     });
-
-                    
-                    
-
-                    
-
-                    // ... rest of your validation/UI logic ...
-
+            
+                    if (!response.ok) {
+                        let errorDetails = `HTTP error! Status: ${response.status}`;
+                        try {
+                            // Attempt to parse the error response body for more details
+                            const errorBody = await response.json(); // Or response.text() if it might not be JSON
+                            errorDetails += ` - Message: ${JSON.stringify(errorBody.message || errorBody)}`;
+                        } catch (e) {
+                            // If parsing the error body fails, we'll stick with the status code
+                            console.warn('Could not parse error response body:', e);
+                            // You could also try response.text() here as a fallback if JSON parsing fails
+                            // const errorText = await response.text();
+                            // errorDetails += ` - Response: ${errorText}`;
+                        }
+                        throw new Error(errorDetails); // This error will be caught by the catch block below
+                    }
+            
+                    const result = await response.json();
+            
+                    if (result.success && result.existingUser) {
+                        console.log("Verification successful. User exists. Token:", result.token);
+                        $('#deLoadStatus').text('User verified. Loading designs...').show();
+            
+                        // Assuming fetchDesigns is also an async function.
+                        // Awaiting it makes its errors catchable by this try...catch block
+                        // and ensures verifyAuth waits for fetchDesigns to complete if needed.
+                        await fetchDesigns(result.token);
+                        // If fetchDesigns doesn't handle its own success UI for #deLoadStatus, you might do it here:
+                        // e.g., $('#deLoadStatus').text('Designs loaded successfully.').show();
+                        // or $('#deLoadStatus').hide(); if no further status is needed.
+                    } else if (result.success && !result.existingUser) {
+                        console.log("Verification successful. User not found/new user.");
+                        $('#deLoadStatus').text('User not found. Please follow on-screen instructions.').show();
+                        // TODO: Implement UI prompt logic for API key, secret for new user registration.
+                        // For example: showNewUserRegistrationForm();
+                    } else {
+                        // Handle cases where result.success is false or other unexpected structures from the backend
+                        const errorMessage = result.message || 'Unknown verification error';
+                        const errorCode = result.errorCode ? ` (Code: ${result.errorCode})` : '';
+                        console.error("Verification failed on backend:", errorMessage, errorCode);
+                        $('#error').text(`Verification failed: ${errorMessage}${errorCode}`).show();
+                        $('#deLoadStatus').text('Verification attempt failed.').show();
+                    }
                 } catch (error) {
-                    console.error('Error calling backend proxy for DEs:', error);
-                    $('#deLoadStatus').text('Error loading DE list.');
-                    $('#error').text(`Error loading Data Extension list: ${error.message}`).show();
+                    // This block now catches errors from:
+                    // - The fetch() call itself (network errors, etc.)
+                    // - The `throw new Error(...)` for non-ok HTTP responses
+                    // - `response.json()` if parsing fails
+                    // - `await fetchDesigns(result.token)` if it throws an error
+                    console.error('Error during verification process:', error);
+                    $('#deLoadStatus').text('An error occurred.').show();
+                    // Display a user-friendly error message. error.message should contain the details.
+                    $('#error').text(`Error: ${error.message || 'The process failed. Please try again later.'}`).show();
                 }
             }
 
