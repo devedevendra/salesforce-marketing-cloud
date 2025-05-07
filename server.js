@@ -710,7 +710,7 @@ app.post('/api/registration', async (req, res) => {
             body: JSON.stringify(enableMcBody)
         });
 
-        let enableMcData;
+        /*let enableMcData;
         const enableMcResponseText = await enableMcResponse.text();
         try {
             enableMcData = JSON.parse(enableMcResponseText);
@@ -721,7 +721,7 @@ app.post('/api/registration', async (req, res) => {
                 error: 'Failed to process response from Marketing Cloud integration service (non-JSON).',
                 errorCode: 'PCM_ENABLE_MC_BAD_RESPONSE'
             });
-        }
+        }*/
 
         if (!enableMcResponse.ok) {
             console.error(`PCM Enable MC API failed. Status: ${enableMcResponse.status}, Body:`, enableMcData);
