@@ -509,7 +509,7 @@ app.post('/getDesigns',  async (req, res) => {
     const { token } = req.body; 
     try {
         //const authToken = await getDesignToken();
-        const response = await fetch('https://v3.pcmintegrations.com/design?perPage=1000', {
+        const response = await fetch('https://apiqa.pcmintegrations.com/design?perPage=1000', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -614,6 +614,143 @@ app.post('/api/verify', async (req, res) => {
     }
 });
 
+
+
+
+// --- Registration Endpoint (Server-Side) ---
+app.post('/api/registration', async (req, res) => {
+    console.log('Received request for /api/registration');
+    
+    // Destructure apiKey, apiSecret, AND jwtSecret from req.body
+    const { apiKey, apiSecret, jwtSecret, mid } = req.body;
+
+    // As per your previous request, explicit server-side validation for the presence of these
+    // fields was removed, relying on client-side validation.
+    // If any of these (apiKey, apiSecret, or now jwtSecret if deemed critical for PCM calls)
+    // are missing, the respective PCM API calls will likely fail,
+    // and that failure will be handled by the error checks below.
+
+    try {
+        // --- Call 1: Login to PCM API to get an auth token ---
+        console.log('Registration Step 1: Calling PCM login API with provided credentials...');
+        const loginApiUrl = 'https://apiqa.pcmintegrations.com/auth/login';
+        
+        const loginResponse = await fetch(loginApiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                apiKey: apiKey,       // From req.body
+                apiSecret: apiSecret  // From req.body
+            })
+        });
+
+        let loginData;
+        const loginResponseText = await loginResponse.text();
+        try {
+            loginData = JSON.parse(loginResponseText);
+        } catch (e) {
+            console.error(`PCM Login API response was not valid JSON. Status: ${loginResponse.status}, Body: ${loginResponseText}`);
+            return res.status(502).json({
+                success: false,
+                error: 'Failed to process response from authentication service (non-JSON).',
+                errorCode: 'PCM_LOGIN_BAD_RESPONSE'
+            });
+        }
+
+        if (!loginResponse.ok) {
+            console.error(`PCM Login API failed. Status: ${loginResponse.status}, Body:`, loginData);
+            const statusCodeToClient = loginResponse.status >= 500 ? 502 : loginResponse.status;
+            return res.status(statusCodeToClient).json({
+                success: false,
+                error: `Authentication failed with PCM service: ${loginData.message || loginResponse.statusText || 'Unknown authentication error'}`,
+                errorCode: loginData.errorCode || `PCM_LOGIN_ERROR_${loginResponse.status}`,
+                details: loginData
+            });
+        }
+
+        const authToken = loginData.token;
+        if (!authToken) {
+            console.error('PCM Login API successful (2xx) but no token received. Body:', loginData);
+            return res.status(500).json({
+                success: false,
+                error: 'Authentication successful but token was not provided by the service.',
+                errorCode: 'PCM_LOGIN_NO_TOKEN'
+            });
+        }
+        console.log('Registration Step 1: PCM Login successful. Token received.');
+
+        // --- Call 2: Enable Marketing Cloud integration using the auth token ---
+        console.log('Registration Step 2: Calling PCM enable Marketing Cloud API...');
+        const enableMcApiUrl = 'https://apiqa.pcmintegrations.com/integration/enable-marketing-cloud';
+        let encryptedMID = await encryptString_node(mid, CIPHER_KEY);
+        // Construct the body for the second API call
+        // Now using the jwtSecret received from the client's request body
+        const enableMcBody = {
+            "uniqueID": encryptedMID, // This remains hardcoded as per original spec
+            "jwtSecret": jwtSecret // Using the jwtSecret from req.body
+        };
+        
+        // Optional: If jwtSecret is absolutely mandatory for the PCM API and client might not send it
+        // (even though client-side validation should catch it), you could add a specific check here:
+        if (typeof jwtSecret === 'undefined' || jwtSecret === null || jwtSecret === '') {
+             console.warn('Warning: jwtSecret for enableMcBody is missing or empty. PCM API might reject.');
+             // Depending on PCM API's strictness, you might even return an error here:
+             // return res.status(400).json({ success: false, error: 'jwtSecret is required for enabling Marketing Cloud integration.' });
+        }
+
+
+        const enableMcResponse = await fetch(enableMcApiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(enableMcBody)
+        });
+
+        let enableMcData;
+        const enableMcResponseText = await enableMcResponse.text();
+        try {
+            enableMcData = JSON.parse(enableMcResponseText);
+        } catch (e) {
+            console.error(`PCM Enable MC API response was not valid JSON. Status: ${enableMcResponse.status}, Body: ${enableMcResponseText}`);
+            return res.status(502).json({
+                success: false,
+                error: 'Failed to process response from Marketing Cloud integration service (non-JSON).',
+                errorCode: 'PCM_ENABLE_MC_BAD_RESPONSE'
+            });
+        }
+
+        if (!enableMcResponse.ok) {
+            console.error(`PCM Enable MC API failed. Status: ${enableMcResponse.status}, Body:`, enableMcData);
+            const statusCodeToClient = enableMcResponse.status >= 500 ? 502 : enableMcResponse.status;
+            return res.status(statusCodeToClient).json({
+                success: false,
+                error: `Failed to enable Marketing Cloud integration: ${enableMcData.message || enableMcResponse.statusText || 'Unknown integration error'}`,
+                errorCode: enableMcData.errorCode || `PCM_ENABLE_MC_ERROR_${enableMcResponse.status}`,
+                details: enableMcData
+            });
+        }
+
+        console.log('Registration Step 2: PCM Enable Marketing Cloud successful.', enableMcData);
+
+        res.status(200).json({
+            success: true,
+            message: 'Registration and Marketing Cloud integration setup completed successfully.',
+            details: enableMcData
+        });
+
+    } catch (error) {
+        console.error('Error during /api/registration process:', error.message, error.stack);
+        res.status(500).json({
+            success: false,
+            error: 'An internal server error occurred during the registration process.',
+            errorCode: 'INTERNAL_SERVER_ERROR'
+        });
+    }
+});
 // ... rest of your server.js (static files, other routes, app.listen) ...
 
 const PORT = process.env.PORT || 3000;
