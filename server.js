@@ -562,33 +562,33 @@ app.post('/api/verify', async (req, res) => {
         console.log('PCM API Response Status Code:', response.status);
         if (response.status === 200) {
             // 1. 200 OK
-            return {
+            return res.status(200).json({
                 success: true,
                 existingUser: true,
                 token: responseBody.token, // Assuming the token is directly in the responseBody
                 JWT: responseBody.jwtSecret // Assuming the jwtSecret is directly in the responseBody
                                         // Or however you derive/access the JWT from the response
-            };
+            });
         } else if (response.status === 404) {
             // 2. 404 Not Found
-            return {
+            return res.status(200).json({
                 success: true,
                 existingUser: false,
                 // You might want to include the error message from the response if needed
                 message: responseBody.error && responseBody.error.data && responseBody.error.data[0] ? responseBody.error.data[0].message : "Unable to locate account",
                 errorCode: responseBody.error ? responseBody.error.code : 404
-            };
+            });
         } else if (response.status === 500) {
             // 3. 500 Internal Server Error
             let errorMessage = "An unexpected error has occurred.";
             if (responseBody.error && responseBody.error.data && responseBody.error.data[0] && responseBody.error.data[0].message) {
                 errorMessage = responseBody.error.data[0].message;
             }
-            return {
+            return res.status(500).json({
                 success: false,
                 message: errorMessage,
                 errorCode: responseBody.error ? responseBody.error.code : 500
-            };
+            });
         } else {
             // Handle other unexpected statuses
             let errorMessage = `Unexpected status code: ${response.status}`;
@@ -597,20 +597,20 @@ app.post('/api/verify', async (req, res) => {
             } else if (responseBody.message) {
                 errorMessage = responseBody.message;
             }
-            return {
+            return res.status(500).json({
                 success: false,
                 message: errorMessage,
                 errorCode: response.status,
                 details: responseBody // include the full body for debugging if desired
-            };
+            });
         }
     } catch (error) {
         console.error('Error during design token retrieval:', error);
-        return {
+        return res.status(500).json({
             success: false,
             message: error.message || "A network error occurred or the response was not valid JSON.",
             errorCode: "NETWORK_OR_PARSE_ERROR" // Custom error code for this scenario
-        };
+        });
     }
 });
 
