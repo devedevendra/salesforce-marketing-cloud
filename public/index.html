@@ -279,7 +279,7 @@
                     // apiSecretInput.value = '';
                     // jwtSecretInput.value = '';
                     console.log('Designs data received from backend:', JSON.stringify(responseData));
-                    designsData = responseData.designsData || []; // Store the designs data
+                    designsData = responseData.designsData.results || []; // Store the designs data
                     const $designSelect = $('#designIdSelect');
                     designsData.forEach(design => {
                         $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType} - ${design.friendlyName}</option>`);
