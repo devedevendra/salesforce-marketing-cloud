@@ -558,7 +558,7 @@ app.post('/api/verify', async (req, res) => {
         });
 
         const responseBody = await response.json(); // Always try to parse the JSON body
-
+        console.log('response:',responseBody);
         if (response.status === 200) {
             // 1. 200 OK
             return {
