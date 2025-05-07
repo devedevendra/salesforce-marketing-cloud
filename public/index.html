@@ -237,7 +237,7 @@
                     console.log('Loaded saved DE key:', dataExtensionKey);
                     $('#dataExtensionKey').val(dataExtensionKey);
                     updateFieldSelections();
-                    fetchDesigns(); // Call function to fetch designs
+                    //fetchDesigns(); // Call function to fetch designs
                     
                 }
             });
@@ -245,11 +245,11 @@
             connection.on('requestedTokens', function(data) {
                 console.log('requestedTokens received:', JSON.stringify(data));
                 tokens = data;
-                if (tokens && tokens.fuel2token) {
-                    sfmcToken = tokens.fuel2token; // Store the token
+                if (tokens ) {
+                    sfmcMID = 'ASDasd';//tokens.MID; // Store the token
             
                     // Check if endpoints are already available
-                    if (sfmcRestHost) {
+                    if (sfmcMID) {
                         runWhenReady(); // Call your function
                     }
                 } else {
@@ -265,22 +265,18 @@
                 if (endpoints && endpoints.fuelapiRestHost) {
                     sfmcRestHost = endpoints.fuelapiRestHost; // Store the REST endpoint
             
-                    // Check if token is already available
-                    if (sfmcToken) {
-                        runWhenReady(); // Call your function
-                    }
                 } else {
                     console.error('Invalid or missing fuelapiRestHost in requestedEndpoints data:', endpoints);
                      // Handle error appropriately, maybe show UI message
                     $('#error').text('Error: Failed to receive valid API endpoint information.').show();
                 }
-                //fetchDataExtensions();
+                
                 
             });
 
 
             // 1. Define variables in a scope accessible by both listeners
-            let sfmcToken;
+            let sfmcMID;
             let sfmcRestHost;
             let initialDataLoaded = false; // Flag to prevent running your function multiple times
 
@@ -294,11 +290,10 @@
                 initialDataLoaded = true; // Set the flag
 
                 console.log("Tokens and Endpoints are both available!");
-                console.log("Using Token:", !!sfmcToken); // Log true/false if token exists
-                console.log("Using Endpoint:", sfmcRestHost);
-
+                console.log("Using MID:", !!sfmcMID); // Log true/false if token exists
+                
                 try{
-                    loadDataExtensionsViaBackendProxy();
+                    verifyAuth();
                 }catch(e){
                     console.log(e);
                 }
@@ -307,26 +302,25 @@
 
             // In index.html, inside loadDataExtensions or similar
 
-            async function loadDataExtensionsViaBackendProxy() {
-                if (!sfmcToken || !sfmcRestHost) {
-                    console.error('Cannot call backend proxy: Token or REST Host missing.');
-                    $('#error').text('Cannot fetch Data Extensions: Missing credentials.').show();
+            async function verifyAuth() {
+                if (!sfmcMID) {
+                    console.error('Cannot call backend proxy: MID missing.');
+                    $('#error').text('Cannot fetch Data Extensions: MID missing.').show();
                     return;
                 }
 
-                $('#deLoadStatus').text('Loading Data Extensions via backend...');
-                console.log('Calling backend proxy /api/proxied-dataextensions...');
+                $('#deLoadStatus').text('Loading...');
+                console.log('Calling /api/verify s...');
 
                 try {
-                    fetch(`${window.APP_URL}/api/proxied-dataextensions`,{ // New endpoint name
+                    fetch(`${window.APP_URL}/api/verify`,{ // New endpoint name
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             // Add any CSRF or session headers if your backend requires them
                         },
                         body: JSON.stringify({
-                            token: sfmcToken,
-                            restHostUrl: sfmcRestHost
+                            mid: sfmcMID 
                         })
                     }).then(response => {
                         if (!response.ok) {
@@ -334,9 +328,19 @@
                         }
                         return response.json();
                     })
-                    .then(data => {
+                    .then(result => {
                         
-                        //$('#designIdSelect').val(selectedDesignId); // Set the selected value if it exists
+                        // You can then use the 'result' object as needed
+                        if (result.success && result.existingUser) {
+                            console.log("Login successful. Token:", result.token);
+                            //get designs
+                            fetchDesigns(result.token); 
+                        } else if (result.success && !result.existingUser) {
+                            console.log("User not found.");
+                            //show prompt to ask for api key , secret & JWT token
+                        } else {
+                            console.error("Login failed:", result.message, "Error Code:", result.errorCode);
+                        }
                     })
                     .catch(error => {
                                  console.error('Error fetching designs from backend:', error);
@@ -430,9 +434,18 @@
                 $('#error').text('Postmonger error: ' + error).show();
             });
 
-            function fetchDesigns() {
+            function fetchDesigns(token) {
                 console.log('Fetching designs from backend (/getDesigns)');
-                fetch(`${window.APP_URL}/getDesigns`)
+                    fetch(`${window.APP_URL}/getDesigns`,{ // New endpoint name
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // Add any CSRF or session headers if your backend requires them
+                        },
+                        body: JSON.stringify({
+                            token: token 
+                        })
+                    })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);

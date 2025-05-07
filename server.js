@@ -1,3 +1,4 @@
+const crypto = require('node:crypto'); // Added for encryption/decryption
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const path = require('path');
@@ -6,13 +7,129 @@ const fs = require('fs');
 const fetch = require('node-fetch'); // Import node-fetch
 const app = express();
 
+
 app.use(express.json());
 app.use(express.text({ type: 'application/jwt' }));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const APP_URL = process.env.APP_URL || 'https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com';
-const CLIENT_ID = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
+//const CLIENT_ID = process.env.CLIENT_ID;
+//const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const CIPHER_KEY = process.env.CIPHER_KEY;
+
+// --- START: Encryption and Decryption Functions ---
+/**
+ * Encrypts a string using AES-GCM with a password-derived key.
+ * @param {string} plaintext The string to encrypt.
+ * @param {string} password The password to derive the encryption key from.
+ * @returns {Promise<string>} A Promise that resolves to the Base64 encoded encrypted string (salt + iv + ciphertext).
+ */
+async function encryptString_node(plaintext, password) {
+    const enc = new TextEncoder();
+
+    // Generate salt (16 bytes)
+    const salt = crypto.webcrypto.getRandomValues(new Uint8Array(16));
+    // Generate IV (12 bytes for AES-GCM)
+    const iv = crypto.webcrypto.getRandomValues(new Uint8Array(12));
+
+    // Derive key from password using PBKDF2
+    const keyMaterial = await crypto.webcrypto.subtle.importKey(
+        "raw",
+        enc.encode(password), // Password as BufferSource
+        "PBKDF2",
+        false, // not extractable
+        ["deriveKey"]
+    );
+
+    const key = await crypto.webcrypto.subtle.deriveKey(
+        {
+        name: "PBKDF2",
+        salt: salt, // Salt as BufferSource
+        iterations: 100000,
+        hash: "SHA-256",
+        },
+        keyMaterial, // Base key
+        { name: "AES-GCM", length: 256 }, // Algorithm and key length for derived key
+        false, // not extractable
+        ["encrypt"] // Key usages
+    );
+
+    // Encrypt the plaintext
+    const ciphertextBuffer = await crypto.webcrypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv }, // Algorithm parameters (IV)
+        key, // Encryption key
+        enc.encode(plaintext) // Plaintext as BufferSource
+    );
+
+    // ciphertextBuffer is an ArrayBuffer. Convert it to Uint8Array.
+    const ciphertext = new Uint8Array(ciphertextBuffer);
+
+    // Concatenate salt + iv + ciphertext
+    const combined = new Uint8Array(salt.length + iv.length + ciphertext.length);
+    combined.set(salt, 0); // Add salt at the beginning
+    combined.set(iv, salt.length); // Add IV after salt
+    combined.set(ciphertext, salt.length + iv.length); // Add ciphertext after IV
+
+    // Convert the combined Uint8Array to a Base64 string
+    return Buffer.from(combined).toString('base64');
+}
+
+/**
+ * Decrypts a Base64 encoded string (salt + iv + ciphertext) using AES-GCM.
+ * @param {string} encryptedString The Base64 encoded string to decrypt.
+ * @param {string} decryptionKey The password used for encryption.
+ * @returns {Promise<string>} A Promise that resolves to the original plaintext string.
+ */
+async function decryptString_node(encryptedString, decryptionKey) {
+    const enc = new TextEncoder(); // For encoding the password
+    const dec = new TextDecoder(); // For decoding the decrypted data
+
+    // Convert Base64 string back to Uint8Array
+    // Buffer.from(string, 'base64') returns a Buffer, which is a Uint8Array subclass
+    const dataBuffer = Buffer.from(encryptedString, 'base64');
+    const data = new Uint8Array(dataBuffer); // Ensure it's a Uint8Array view if needed for strictness
+
+    // Extract salt, IV, and ciphertext
+    // Salt is the first 16 bytes
+    const salt = data.slice(0, 16);
+    // IV is the next 12 bytes
+    const iv = data.slice(16, 28); // 16 (salt) + 12 (iv) = 28
+    // Ciphertext is the rest
+    const ciphertext = data.slice(28);
+
+    // Derive key from password (must use the same salt and parameters as encryption)
+    const keyMaterial = await crypto.webcrypto.subtle.importKey(
+        "raw",
+        enc.encode(decryptionKey),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+    );
+
+    const key = await crypto.webcrypto.subtle.deriveKey(
+        {
+        name: "PBKDF2",
+        salt: salt, // Use the extracted salt
+        iterations: 100000,
+        hash: "SHA-256",
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["decrypt"] // Key usage for decryption
+    );
+
+    // Decrypt the ciphertext
+    const decryptedBuffer = await crypto.webcrypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv }, // Algorithm parameters (extracted IV)
+        key, // Decryption key
+        ciphertext // Ciphertext as BufferSource
+    );
+
+    // decryptedBuffer is an ArrayBuffer. Decode it to a string.
+    return dec.decode(decryptedBuffer);
+}
+// --- END: Encryption and Decryption Functions ---
 
 const verifyJWT = (req, res, next) => {
     console.log('Request Headers:', JSON.stringify(req.headers));
@@ -383,98 +500,20 @@ async function getDesignToken() {
     }
 }
 
-// --- Start: Added getDataExtensionInfo function ---
-        /**
-         * Fetches Data Extension names and keys from Salesforce Marketing Cloud using REST API.
-         * Intended for use within a Custom Activity UI using postmonger.
-         *
-         * @param {string} token - The short-lived access token (from connection.on('requestedTokens')).
-         * @param {string} restHostUrl - The REST API base URL (e.g., from connection.on('requestedEndpoints').fuelapiRestHost).
-         * @param {number} [pageSize=200] - Optional: How many DEs to fetch per page (max usually 2500, but 200 is reasonable for UI).
-         * @returns {Promise<Array<{name: string, customerKey: string}>>} A promise that resolves with an array of Data Extension objects
-         * (containing name and customerKey) or rejects with an error.
-         */
-        async function getDataExtensionInfo(token, restHostUrl, pageSize = 200) {
-            // Ensure the base URL doesn't end with a slash, then append the API path
-            const baseUrl = restHostUrl.endsWith('/') ? restHostUrl.slice(0, -1) : restHostUrl;
-            // Use the /data/v1/dataextensions endpoint. Add paging and ordering.
-            const apiUrl = `${baseUrl}/data/v1/dataextensions?$pagesize=${pageSize}&$orderBy=Name`; // Order by name for better UI display
-  
-            console.log(`Workspaceing Data Extensions from: ${apiUrl}`); // Helpful for debugging
-  
-            if (!token || !restHostUrl) {
-               console.error('Missing token or restHostUrl for getDataExtensionInfo');
-               return Promise.reject(new Error('Authentication token or REST host URL is missing.'));
-            }
-  
-            try {
-              const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                  // Crucial: Authorization header with Bearer token
-                  'Authorization': `Bearer ${token}`
-                }
-              });
-  
-              console.log(`Data Extension fetch response status: ${response.status}`); // Debugging
-  
-              if (!response.ok) {
-                let errorDetails = `Status: ${response.status} ${response.statusText}`;
-                try {
-                  // Try to get more specific error message from SFMC if available
-                  const errorBody = await response.json();
-                  errorDetails += ` | Body: ${JSON.stringify(errorBody)}`;
-                } catch (e) {
-                  // If parsing error body fails, just use the status text
-                }
-                throw new Error(`Failed to fetch Data Extensions. ${errorDetails}`);
-              }
-  
-              // Parse the JSON response
-              const data = await response.json();
-              // console.log('Received DE data:', data); // Debugging - careful if you have many DEs
-  
-              // Check if the expected 'items' array exists
-               if (!data || !Array.isArray(data.items)) {
-                   console.warn('Unexpected API response structure:', data);
-                   // If the API indicates count is 0, it's valid, return empty array
-                   if (data && data.count === 0) {
-                       return [];
-                   }
-                   // Otherwise, the structure is wrong
-                   throw new Error('Unexpected response structure received from Data Extension API.');
-              }
-  
-              // Extract only the name and customerKey from each item in the response
-              const dataExtensions = data.items.map(item => ({
-                name: item.name,
-                customerKey: item.customerKey
-                // You could add item.description here if needed for the UI
-              }));
-  
-              console.log(`Successfully fetched ${dataExtensions.length} Data Extensions.`);
-              return dataExtensions;
-  
-            } catch (error) {
-              console.error('Error during Data Extension fetch:', error);
-              // Re-throw the error so the calling code can handle it (e.g., show UI message)
-              throw error;
-            }
-          }
-          // --- End: Added getDataExtensionInfo function ---
+
 
 // New endpoint to fetch designs, protected by JWT verification
 app.get('/getDesigns',  async (req, res) => {
     console.log('getDesigns endpoint called');
     console.log('Request Headers:', JSON.stringify(req.headers));
-
+    const { token } = req.body; 
     try {
-        const authToken = await getDesignToken();
+        //const authToken = await getDesignToken();
         const response = await fetch('https://v3.pcmintegrations.com/design?perPage=1000', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${authToken}`
+                'Authorization': `Bearer ${token}`
             }
         });
 
@@ -492,46 +531,85 @@ app.get('/getDesigns',  async (req, res) => {
 });
 
 // --- Endpoint to proxy DE request using frontend token ---
-app.post('/api/proxied-dataextensions', async (req, res) => {
-    console.log('Received request for /api/proxied-dataextensions');
-    const { token, restHostUrl } = req.body; // Get token/URL from request body
+app.post('/api/verify', async (req, res) => {
+    console.log('Received request for /api/verify');
+    const { mid } = req.body; // Get token/URL from request body
 
     // Basic validation
-    if (!token || !restHostUrl) {
-        return res.status(400).json({ error: 'Missing token or restHostUrl in request body.' });
+    if (!mid) {
+        return res.status(400).json({ error: 'Missing MID in request body.' });
     }
 
+    
     try {
-        // Construct the SFMC API URL using the provided host URL
-        const baseUrl = restHostUrl.endsWith('/') ? restHostUrl.slice(0, -1) : restHostUrl;
-        const deApiUrl = `${baseUrl}/data/v1/dataextensions?$pagesize=200&$orderBy=Name`;
 
-        console.log(`Proxying request to SFMC: ${deApiUrl}`);
+        const pcmLoginApiUrl = 'https://apiqa.pcmintegrations.com/auth/marketing-cloud-login';
 
-        // Make the call to SFMC using the *provided* token
-        const sfmcResponse = await axios.get(deApiUrl, {
+        console.log(`Checking if user exists: ${pcmLoginApiUrl}`);
+        let encryptedMID = await encryptString_node(mid, CIPHER_KEY);
+        const response = await fetch(pcmLoginApiUrl, {
+            method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}` // Use the token from the request
-            }
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                uniqueID: encryptedMID
+            })
         });
 
-        // Extract and send back the relevant data
-        const dataExtensions = (sfmcResponse.data && Array.isArray(sfmcResponse.data.items))
-            ? sfmcResponse.data.items.map(item => ({
-                name: item.name,
-                customerKey: item.customerKey
-              }))
-            : [];
+        const responseBody = await response.json(); // Always try to parse the JSON body
 
-        console.log(`Sending ${dataExtensions.length} proxied DEs to frontend.`);
-        res.json(dataExtensions);
-
+        if (response.status === 200) {
+            // 1. 200 OK
+            return {
+                success: true,
+                existingUser: true,
+                token: responseBody.token, // Assuming the token is directly in the responseBody
+                JWT: responseBody.jwtSecret // Assuming the jwtSecret is directly in the responseBody
+                                        // Or however you derive/access the JWT from the response
+            };
+        } else if (response.status === 404) {
+            // 2. 404 Not Found
+            return {
+                success: true,
+                existingUser: false,
+                // You might want to include the error message from the response if needed
+                message: responseBody.error && responseBody.error.data && responseBody.error.data[0] ? responseBody.error.data[0].message : "Unable to locate account",
+                errorCode: responseBody.error ? responseBody.error.code : 404
+            };
+        } else if (response.status === 500) {
+            // 3. 500 Internal Server Error
+            let errorMessage = "An unexpected error has occurred.";
+            if (responseBody.error && responseBody.error.data && responseBody.error.data[0] && responseBody.error.data[0].message) {
+                errorMessage = responseBody.error.data[0].message;
+            }
+            return {
+                success: false,
+                message: errorMessage,
+                errorCode: responseBody.error ? responseBody.error.code : 500
+            };
+        } else {
+            // Handle other unexpected statuses
+            let errorMessage = `Unexpected status code: ${response.status}`;
+            if (responseBody.error && responseBody.error.message) {
+                errorMessage = responseBody.error.message;
+            } else if (responseBody.message) {
+                errorMessage = responseBody.message;
+            }
+            return {
+                success: false,
+                message: errorMessage,
+                errorCode: response.status,
+                details: responseBody // include the full body for debugging if desired
+            };
+        }
     } catch (error) {
-        // Handle errors, especially potential 401 Unauthorized if the token is expired/invalid
-        console.error('Error proxying DE request to SFMC:', error.response ? error.response.data : error.message);
-        const status = error.response ? error.response.status : 500;
-        const message = error.response ? (error.response.data.message || error.message) : error.message;
-        res.status(status).json({ error: 'Failed to fetch Data Extensions via SFMC proxy.', details: message });
+        console.error('Error during design token retrieval:', error);
+        return {
+            success: false,
+            message: error.message || "A network error occurred or the response was not valid JSON.",
+            errorCode: "NETWORK_OR_PARSE_ERROR" // Custom error code for this scenario
+        };
     }
 });
 
