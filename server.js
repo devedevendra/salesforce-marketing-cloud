@@ -684,7 +684,7 @@ app.post('/api/registration', async (req, res) => {
         // --- Call 2: Enable Marketing Cloud integration using the auth token ---
         console.log('Registration Step 2: Calling PCM enable Marketing Cloud API...');
         const enableMcApiUrl = 'https://apiqa.pcmintegrations.com/integration/enable-marketing-cloud';
-        let encryptedMID = await encryptString_node(mid, CIPHER_KEY);
+        let encryptedMID = await encryptString_node(jwtSecret, CIPHER_KEY);
         // Construct the body for the second API call
         // Now using the jwtSecret received from the client's request body
         const enableMcBody = {
