@@ -158,7 +158,7 @@
                 </div>
             <div class="form-group">
                 <label for="jwtSecret">JWT Secret:</label>
-                <input type="text" class="form-control" id="jwtSecret" name="jwtSecret" placeholder="Enter JWT Secret from form">
+                <input type="text" class="form-control" id="jwtSecret" name="jwtSecret" placeholder="Enter JWT Secret from PCM under Setup>Apps>Installed Packages">
                 </div>
             
             <button type="button" class="btn btn-primary" id="saveButton" onclick="handleRegistration()">Register</button>
@@ -269,7 +269,7 @@
                 console.log('requestedTokens received:', JSON.stringify(data));
                 tokens = data;
                 if (tokens ) {
-                    sfmcMID = tokens.MID;// 'ASDasd';//tokens.MID; // Store the token
+                    sfmcMID =   '5460144251234';//tokens.MID; // Store the token
             
                     // Check if endpoints are already available
                     if (sfmcMID) {
@@ -581,6 +581,13 @@
                         // apiKeyInput.value = '';
                         // apiSecretInput.value = '';
                         // jwtSecretInput.value = '';
+                        console.log('Designs data received from backend:', JSON.stringify(responseData));
+                        designsData = responseData.designsData || []; // Store the designs data
+                        const $designSelect = $('#designIdSelect');
+                        designsData.forEach(design => {
+                            $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType} - ${design.friendlyName}</option>`);
+                        });
+                        $('#error').hide();
                         setTimeout(function(){
                             $('#configPanel').show();
                             $('#regPanel').hide(); 

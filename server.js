@@ -736,11 +736,59 @@ app.post('/api/registration', async (req, res) => {
 
         console.log('Registration Step 2: PCM Enable Marketing Cloud successful.', enableMcData);
 
-        res.status(200).json({
-            success: true,
-            message: 'Registration and Marketing Cloud integration setup completed successfully.',
-            details: enableMcData
-        });
+         // --- Call 3: Fetch Designs using the authToken from Call 1 ---
+         console.log('Registration Step 3: Fetching designs...');
+         const designsApiUrl = 'https://apiqa.pcmintegrations.com/design?perPage=1000';
+         let designsData = null;
+         let designsError = null; // To store any error message specifically from fetching designs
+ 
+         try {
+             const designsResponse = await fetch(designsApiUrl, {
+                 method: 'GET',
+                 headers: {
+                     'Accept': 'application/json',
+                     'Authorization': `Bearer ${authToken}` // Use the token from Call 1
+                 }
+             });
+ 
+             const designsResponseText = await designsResponse.text();
+             let parsedDesignsData; // Temporary variable for parsing
+             try {
+                 parsedDesignsData = JSON.parse(designsResponseText);
+             } catch (e) {
+                 console.error(`PCM Designs API response was not valid JSON. Status: ${designsResponse.status}, Body: ${designsResponseText}`);
+                 if (!designsResponse.ok) { // If HTTP status was also an error
+                     designsError = `Failed to fetch designs: Upstream API error (Status ${designsResponse.status}, non-JSON response).`;
+                 } else { // HTTP status was OK, but body wasn't JSON (unexpected)
+                     designsError = 'Failed to fetch designs: Upstream API response was not valid JSON despite an OK status.';
+                 }
+                 // designsData remains null
+             }
+ 
+             if (designsResponse.ok && !designsError) { // If HTTP status is OK and no parsing error occurred
+                 designsData = parsedDesignsData; // Assign parsed data
+                 console.log('Registration Step 3: Designs fetched successfully.');
+             } else if (!designsError) { // HTTP status was not OK, but JSON might have error details
+                 designsError = `Failed to fetch designs: ${parsedDesignsData.message || parsedDesignsData.error || designsResponse.statusText || 'Unknown error from designs API'}`;
+                 console.error(`PCM Designs API failed. Status: ${designsResponse.status}, Parsed Body (if any):`, parsedDesignsData);
+             }
+             // If designsError was set by JSON parsing failure, it's already captured.
+ 
+         } catch (fetchDesignsNetworkError) {
+             // This catches network errors for the designs fetch call itself
+             console.error('Network or other error during Fetch Designs call:', fetchDesignsNetworkError);
+             designsError = `Failed to fetch designs due to a network or system error: ${fetchDesignsNetworkError.message}`;
+         }
+ 
+         // Send final success response to the client
+         // The overall 'success' pertains to the primary registration (Steps 1 & 2)
+         res.status(200).json({
+             success: true, 
+             message: 'Registration and Marketing Cloud integration setup completed.',
+             registrationDetails: enableMcData, // Details from Call 2
+             designsData: designsData,          // Actual designs data from Call 3 (or null if error)
+             designsError: designsError         // Error message if Call 3 failed (or null if success)
+         });
 
     } catch (error) {
         console.error('Error during /api/registration process:', error.message, error.stack);
