@@ -177,7 +177,137 @@
         </div>
     </div>
     <script>
+        let sfmcMID;
+            let sfmcRestHost;
+            let initialDataLoaded = false;
+        async function handleRegistration() {
+            const registrationStatusDiv = document.getElementById('registrationStatus');
+            // Clear previous status messages and styling
+            registrationStatusDiv.textContent = '';
+            registrationStatusDiv.className = ''; // Clears any 'text-danger' or 'text-success' etc.
         
+            // 1. Get values from the form inputs
+            const apiKeyInput = document.getElementById('apiKey');
+            const apiSecretInput = document.getElementById('apiSecret');
+            const jwtSecretInput = document.getElementById('jwtSecret'); // For the form's JWT Secret field
+        
+            const apiKey = apiKeyInput.value.trim();
+            const apiSecret = apiSecretInput.value.trim();
+            const jwtSecretFromForm = jwtSecretInput.value.trim(); // Value from the form's JWT Secret input
+        
+            // 2. Validation for each field
+            let validationErrors = [];
+            if (!apiKey) {
+                validationErrors.push("API Key is required.");
+                // You could add a class to highlight the input field, e.g., apiKeyInput.classList.add('is-invalid');
+            } else {
+                // apiKeyInput.classList.remove('is-invalid'); // Example for removing error state
+            }
+        
+            if (!apiSecret) {
+                validationErrors.push("API Secret is required.");
+                // apiSecretInput.classList.add('is-invalid');
+            } else {
+                // apiSecretInput.classList.remove('is-invalid');
+            }
+        
+            if (!jwtSecretFromForm) { // Validating the JWT Secret from the form input
+                validationErrors.push("JWT Secret (from form) is required.");
+                // jwtSecretInput.classList.add('is-invalid');
+            } else {
+                // jwtSecretInput.classList.remove('is-invalid');
+            }
+        
+            if (validationErrors.length > 0) {
+                registrationStatusDiv.innerHTML = validationErrors.join('<br>'); // Display all errors
+                registrationStatusDiv.className = 'text-danger'; // Bootstrap class for error styling
+                return; // Stop execution if there are validation errors
+            }
+        
+            registrationStatusDiv.textContent = 'Registering... Please wait.';
+            registrationStatusDiv.className = 'text-info'; // Bootstrap class for info styling
+        
+            try {
+                // Define the URL for your backend registration endpoint
+                // If your frontend and backend are on different origins, use the full URL.
+                // If APP_URL is defined globally and points to your backend:
+                // const backendRegistrationUrl = `${window.APP_URL || ''}/api/registration`;
+                //const backendRegistrationUrl = '/api/registration'; // Assuming same origin
+        
+                // 3. Call your backend API
+                const response = await fetch(`${window.APP_URL}/api/registration`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        apiKey: apiKey,
+                        apiSecret: apiSecret,
+                        jwtSecret: jwtSecretFromForm,
+                        mid : sfmcMID // Sending the form's JWT secret to the backend
+                    })
+                });
+        
+                // 4. Handle the response from your backend
+                let responseData;
+                try {
+                    responseData = await response.json(); // Attempt to parse the response as JSON
+                } catch (jsonError) {
+                    // This catches errors if response.json() fails (e.g., backend sent non-JSON error page)
+                    console.error('Failed to parse JSON response from backend:', jsonError);
+                    if (!response.ok) { // HTTP error status and non-JSON body
+                        throw new Error(`Registration failed: Server responded with status ${response.status} and an unreadable error format.`);
+                    } else { // HTTP OK status but non-JSON body (unexpected)
+                        throw new Error('Received an unexpected non-JSON response from the server.');
+                    }
+                }
+        
+                if (!response.ok) {
+                    // The backend should send a JSON error like { success: false, error: "message", errorCode: "..." }
+                    console.error('Backend registration failed:', responseData);
+                    const errorMessage = responseData.error || responseData.message || `Registration failed with status: ${response.status}`;
+                    throw new Error(errorMessage);
+                }
+        
+                // Assuming your backend sends { success: true, message: "...", ... }
+                if (responseData.success) {
+                    console.log('Registration successful:', responseData);
+                    registrationStatusDiv.textContent = responseData.message || 'Registration process completed successfully!';
+                    registrationStatusDiv.className = 'text-success'; // Bootstrap class for success
+                    // Optionally, clear the form or redirect
+                    // apiKeyInput.value = '';
+                    // apiSecretInput.value = '';
+                    // jwtSecretInput.value = '';
+                    console.log('Designs data received from backend:', JSON.stringify(responseData));
+                    designsData = responseData.designsData || []; // Store the designs data
+                    const $designSelect = $('#designIdSelect');
+                    designsData.forEach(design => {
+                        $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType} - ${design.friendlyName}</option>`);
+                    });
+                    $('#error').hide();
+                    setTimeout(function(){
+                        $('#configPanel').show();
+                        $('#regPanel').hide(); 
+                    },3000);
+                } else {
+                    // This case handles if response.ok was true (e.g., status 200) but your backend's
+                    // business logic indicated a failure (e.g., by sending { success: false, error: "..." })
+                    console.error('Backend indicated registration failure:', responseData);
+                    const errorMessage = responseData.error || responseData.message || 'Registration failed. Please review details.';
+                    throw new Error(errorMessage);
+                }
+        
+            } catch (error) {
+                // This catches:
+                // - Network errors from the fetch call itself
+                // - Errors thrown from !response.ok block
+                // - Errors thrown if responseData.success is false
+                // - JSON parsing errors that led to an error being thrown
+                console.error('Full registration process failed:', error);
+                registrationStatusDiv.textContent = `Error: ${error.message}`;
+                registrationStatusDiv.className = 'text-danger';
+            }
+        }
 
 
         if (typeof Postmonger === 'undefined') {
@@ -299,9 +429,7 @@
 
 
             // 1. Define variables in a scope accessible by both listeners
-            let sfmcMID;
-            let sfmcRestHost;
-            let initialDataLoaded = false; // Flag to prevent running your function multiple times
+             // Flag to prevent running your function multiple times
 
             // 2. Define the function you want to call when both are ready
             //    (This function will contain the logic that needs both token and endpoint)
@@ -483,134 +611,7 @@
                 $('#error').text('Postmonger error: ' + error).show();
             });
 
-            async function handleRegistration() {
-                const registrationStatusDiv = document.getElementById('registrationStatus');
-                // Clear previous status messages and styling
-                registrationStatusDiv.textContent = '';
-                registrationStatusDiv.className = ''; // Clears any 'text-danger' or 'text-success' etc.
             
-                // 1. Get values from the form inputs
-                const apiKeyInput = document.getElementById('apiKey');
-                const apiSecretInput = document.getElementById('apiSecret');
-                const jwtSecretInput = document.getElementById('jwtSecret'); // For the form's JWT Secret field
-            
-                const apiKey = apiKeyInput.value.trim();
-                const apiSecret = apiSecretInput.value.trim();
-                const jwtSecretFromForm = jwtSecretInput.value.trim(); // Value from the form's JWT Secret input
-            
-                // 2. Validation for each field
-                let validationErrors = [];
-                if (!apiKey) {
-                    validationErrors.push("API Key is required.");
-                    // You could add a class to highlight the input field, e.g., apiKeyInput.classList.add('is-invalid');
-                } else {
-                    // apiKeyInput.classList.remove('is-invalid'); // Example for removing error state
-                }
-            
-                if (!apiSecret) {
-                    validationErrors.push("API Secret is required.");
-                    // apiSecretInput.classList.add('is-invalid');
-                } else {
-                    // apiSecretInput.classList.remove('is-invalid');
-                }
-            
-                if (!jwtSecretFromForm) { // Validating the JWT Secret from the form input
-                    validationErrors.push("JWT Secret (from form) is required.");
-                    // jwtSecretInput.classList.add('is-invalid');
-                } else {
-                    // jwtSecretInput.classList.remove('is-invalid');
-                }
-            
-                if (validationErrors.length > 0) {
-                    registrationStatusDiv.innerHTML = validationErrors.join('<br>'); // Display all errors
-                    registrationStatusDiv.className = 'text-danger'; // Bootstrap class for error styling
-                    return; // Stop execution if there are validation errors
-                }
-            
-                registrationStatusDiv.textContent = 'Registering... Please wait.';
-                registrationStatusDiv.className = 'text-info'; // Bootstrap class for info styling
-            
-                try {
-                    // Define the URL for your backend registration endpoint
-                    // If your frontend and backend are on different origins, use the full URL.
-                    // If APP_URL is defined globally and points to your backend:
-                    // const backendRegistrationUrl = `${window.APP_URL || ''}/api/registration`;
-                    //const backendRegistrationUrl = '/api/registration'; // Assuming same origin
-            
-                    // 3. Call your backend API
-                    const response = await fetch(`${window.APP_URL}/api/registration`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            apiKey: apiKey,
-                            apiSecret: apiSecret,
-                            jwtSecret: jwtSecretFromForm,
-                            mid : sfmcMID // Sending the form's JWT secret to the backend
-                        })
-                    });
-            
-                    // 4. Handle the response from your backend
-                    let responseData;
-                    try {
-                        responseData = await response.json(); // Attempt to parse the response as JSON
-                    } catch (jsonError) {
-                        // This catches errors if response.json() fails (e.g., backend sent non-JSON error page)
-                        console.error('Failed to parse JSON response from backend:', jsonError);
-                        if (!response.ok) { // HTTP error status and non-JSON body
-                            throw new Error(`Registration failed: Server responded with status ${response.status} and an unreadable error format.`);
-                        } else { // HTTP OK status but non-JSON body (unexpected)
-                            throw new Error('Received an unexpected non-JSON response from the server.');
-                        }
-                    }
-            
-                    if (!response.ok) {
-                        // The backend should send a JSON error like { success: false, error: "message", errorCode: "..." }
-                        console.error('Backend registration failed:', responseData);
-                        const errorMessage = responseData.error || responseData.message || `Registration failed with status: ${response.status}`;
-                        throw new Error(errorMessage);
-                    }
-            
-                    // Assuming your backend sends { success: true, message: "...", ... }
-                    if (responseData.success) {
-                        console.log('Registration successful:', responseData);
-                        registrationStatusDiv.textContent = responseData.message || 'Registration process completed successfully!';
-                        registrationStatusDiv.className = 'text-success'; // Bootstrap class for success
-                        // Optionally, clear the form or redirect
-                        // apiKeyInput.value = '';
-                        // apiSecretInput.value = '';
-                        // jwtSecretInput.value = '';
-                        console.log('Designs data received from backend:', JSON.stringify(responseData));
-                        designsData = responseData.designsData || []; // Store the designs data
-                        const $designSelect = $('#designIdSelect');
-                        designsData.forEach(design => {
-                            $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType} - ${design.friendlyName}</option>`);
-                        });
-                        $('#error').hide();
-                        setTimeout(function(){
-                            $('#configPanel').show();
-                            $('#regPanel').hide(); 
-                        },3000);
-                    } else {
-                        // This case handles if response.ok was true (e.g., status 200) but your backend's
-                        // business logic indicated a failure (e.g., by sending { success: false, error: "..." })
-                        console.error('Backend indicated registration failure:', responseData);
-                        const errorMessage = responseData.error || responseData.message || 'Registration failed. Please review details.';
-                        throw new Error(errorMessage);
-                    }
-            
-                } catch (error) {
-                    // This catches:
-                    // - Network errors from the fetch call itself
-                    // - Errors thrown from !response.ok block
-                    // - Errors thrown if responseData.success is false
-                    // - JSON parsing errors that led to an error being thrown
-                    console.error('Full registration process failed:', error);
-                    registrationStatusDiv.textContent = `Error: ${error.message}`;
-                    registrationStatusDiv.className = 'text-danger';
-                }
-            }
 
             async function fetchDesigns(authToken) {
                 console.log('Fetching designs from backend (/getDesigns)');
