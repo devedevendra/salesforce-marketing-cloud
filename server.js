@@ -422,16 +422,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
             "recipients": [
                 {
                     "zipCode": postalCode,
-                    "variables": [
-                        {
-                            "value": "https://scscloud3-dev-ed.develop.my.salesforce.com/ncsphoto/rMlcRI2NUkfch7du079jmHImr6VtiU8vzrEXMITxwi85Jhd1pAvciMtP7aUf-yyCfvaj33g-yz9MqJnoxt-00Q%3D%3D?fromEmail=1", // Replace with your dynamic image URL logic
-                            "key": "DynamicImage"
-                        },
-                        {
-                            "value": firstName,
-                            "key": "fn"  
-                        }
-                    ],
+                    "variables": [],
                     "state": state,
                     "lastName": lastName,
                     "firstName": firstName,
