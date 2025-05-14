@@ -145,14 +145,6 @@ const verifyJWT = (req, res, next) => {
         token = req.body;
     }
 
-    const decodedPayloadForLookup = jwt.decode(token); // Does not verify signature
-    if (!decodedPayloadForLookup) {
-        console.error('Could not decode SFMC token (it might be malformed).');
-        return res.status(400).json({ error: 'Malformed token.' });
-    }
-    console.log('decodedPayloadForLookup'+ JSON.stringify(decodedPayloadForLookup));
-
-
     if (!token) {
         console.error('No token provided in request');
         return res.status(401).json({ error: 'No token provided' });
@@ -221,7 +213,7 @@ app.get('/config.json', (req, res) => {
                 "body": "",
                 "header": "",
                 "format": "json",
-                "useJwt": false,
+                "useJwt": true,
                 "timeout": 10000
             }
         },
@@ -229,19 +221,19 @@ app.get('/config.json', (req, res) => {
             "save": {
                 "url": `${APP_URL}/save`,
                 "verb": "POST",
-                "useJwt": false,
+                "useJwt": true,
                 "configured": true
             },
             "publish": {
                 "url": `${APP_URL}/publish`,
                 "verb": "POST",
-                "useJwt": false,
+                "useJwt": true,
                 "configured": true
             },
             "validate": {
                 "url": `${APP_URL}/validate`,
                 "verb": "POST",
-                "useJwt": false,
+                "useJwt": true,
                 "configured": true
             }
         },
@@ -251,7 +243,7 @@ app.get('/config.json', (req, res) => {
                 "height": 800,
                 "width": 1000,
                 "fullscreen": false,
-                "useJwt": false // Add this line!
+                "useJwt": true // Add this line!
             }
         },
         "schema": {
@@ -339,7 +331,7 @@ app.get('/config.json', (req, res) => {
                                 "isNullable": true,
                                 "direction": "in"
                             },
-                            "MID": {
+                            "mid": {
                                 "dataType": "Text",
                                 "isNullable": true,
                                 "direction": "in"
@@ -357,7 +349,7 @@ app.get('/config.json', (req, res) => {
 // Serve static files (after the dynamic routes)
 app.use(express.static('public'));
 
-app.post('/save', (req, res) => {
+app.post('/save', verifyJWT, (req, res) => {
     console.log('Save endpoint called with body:', req.body);
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
@@ -368,10 +360,10 @@ app.post('/save', (req, res) => {
     console.log('Save endpoint responded with success');
 });
 
-app.post('/execute',   async (req, res) => {
+app.post('/execute', verifyJWT, async (req, res) => {
     console.log('Execute endpoint called with body:', JSON.stringify(req.body));
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
-    const { inArguments } = req.body;
+    const { inArguments } = req.decoded;
     if (!inArguments || !inArguments[0]) {
         console.error('No inArguments provided in execute request');
         return res.status(400).json({ error: 'No inArguments provided' });
@@ -386,14 +378,12 @@ app.post('/execute',   async (req, res) => {
     const postalCode = args.postal_code || 'Unknown';
     const country = args.country || 'Unknown';
     const designId =  parseInt(args.selectedDesignId || 'Unknown');
-    const mid = args.MID;
-
-    var authToken;
+    const mid  =  (args.mid || 'Unknown');
 
     console.log(`Processing contact - First Name: ${firstName}, Last Name: ${lastName}, Street: ${street}, City: ${city}, State: ${state}, Postal Code: ${postalCode}, Country: ${country}`);
     try {
-
-                const pcmLoginApiUrl = 'https://apiqa.pcmintegrations.com/auth/marketing-cloud-login';
+        var authToken = '';
+        const pcmLoginApiUrl = 'https://apiqa.pcmintegrations.com/auth/marketing-cloud-login';
                 
                 console.log(`Checking if user exists: ${pcmLoginApiUrl}`);
                 let encryptedMID = await encryptString_node(mid, CIPHER_KEY);
@@ -418,8 +408,7 @@ app.post('/execute',   async (req, res) => {
                     // 2. 404 Not Found
                     console.log(tokenresponseBody);
                 }
-                
-        
+
         const requestBody = {
             "returnAddress": {
                 "zipCode": "12019",
@@ -485,7 +474,7 @@ app.post('/execute',   async (req, res) => {
     
 });
 
-app.post('/publish',   (req, res) => {
+app.post('/publish', verifyJWT, (req, res) => {
     console.log('Publish endpoint called with body:', req.body);
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
@@ -496,7 +485,7 @@ app.post('/publish',   (req, res) => {
     console.log('Publish endpoint responded with success');
 });
 
-app.post('/validate',  (req, res) => {
+app.post('/validate', verifyJWT, (req, res) => {
     console.log('Validate endpoint called with body:', req.body);
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
