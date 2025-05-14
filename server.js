@@ -436,7 +436,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
             "designID": designId // Using the dynamic designId from args
         };
         console.log(JSON.stringify(requestBody));
-        const response = await fetch('https://v3.pcmintegrations.com/order/postcard', {
+        const response = await fetch('https://apiqa.pcmintegrations.com/order/postcard', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
