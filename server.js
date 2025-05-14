@@ -1,6 +1,7 @@
 const crypto = require('node:crypto'); // Added for encryption/decryption
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const session = require('express-session'); // Added for session management
 const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
@@ -11,11 +12,24 @@ const app = express();
 app.use(express.json());
 app.use(express.text({ type: 'application/jwt' }));
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+var JWT_SECRET = 'your-secret-key';
 const APP_URL = process.env.APP_URL || 'https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com';
 //const CLIENT_ID = process.env.CLIENT_ID;
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const CIPHER_KEY = process.env.CIPHER_KEY;
+
+
+// Session Configuration
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'a-very-strong-random-session-secret-key', // CHANGE THIS! Use a strong, random string from ENV
+    resave: false, // Don't save session if unmodified
+    saveUninitialized: false, // Don't create session until something stored
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production (requires HTTPS)
+        httpOnly: true, // Prevents client-side JS from reading the cookie
+        maxAge: 1000 * 60 * 60 * 24 // Optional: Session cookie expiry (e.g., 24 hours)
+    }
+}));
 
 // --- START: Encryption and Decryption Functions ---
 /**
@@ -135,6 +149,8 @@ const verifyJWT = (req, res, next) => {
     console.log('Request Headers:', JSON.stringify(req.headers));
     console.log('Verifying JWT for request:', req.method, req.url);
     let token;
+    JWT_SECRET = req.session.jwt;
+    console.log('JWT_SECRET '+JWT_SECRET);
     const authHeader = req.headers.authorization || req.headers.Authorization;
     if (authHeader) {
         console.log('Authorization header found:', authHeader);
@@ -148,6 +164,8 @@ const verifyJWT = (req, res, next) => {
         console.error('No token provided in request');
         return res.status(401).json({ error: 'No token provided' });
     }
+
+    
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
@@ -562,6 +580,7 @@ app.post('/api/verify', async (req, res) => {
         console.log('PCM API Response Status Code:', response.status);
         if (response.status === 200) {
             // 1. 200 OK
+            req.session.jwt = responseBody.jwtSecret;
             return res.status(200).json({
                 success: true,
                 existingUser: true,

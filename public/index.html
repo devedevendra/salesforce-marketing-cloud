@@ -141,6 +141,9 @@
                     <option value="">-- Select a Design --</option>
                 </select>
             </div>
+            <div class="form-group" id="previewPanel" style="display: none;">
+                <a onclick="showPreview();" >View Design Proof</a>
+            </div>
             
             <!--button type="button" class="btn btn-primary" id="saveButton">Save</button-->
         </form>
@@ -178,8 +181,8 @@
     </div>
     <script>
         let sfmcMID;
-            let sfmcRestHost;
-            let initialDataLoaded = false;
+        let sfmcRestHost;
+        let initialDataLoaded = false;
         async function handleRegistration() {
             const registrationStatusDiv = document.getElementById('registrationStatus');
             // Clear previous status messages and styling
@@ -309,6 +312,13 @@
             }
         }
 
+        //
+        function showPreview(){
+            
+            const selectedDesignId = $('#designIdSelect').val();
+                
+            showDesignPreviewModal(parseInt(selectedDesignId));
+        }
 
         if (typeof Postmonger === 'undefined') {
             console.error('Postmonger failed to load');
@@ -653,7 +663,9 @@
 
             $('#designIdSelect').on('change', function() {
                 const selectedDesignId = $(this).val();
-                showDesignPreviewModal(parseInt(selectedDesignId));
+                
+                if(selectedDesignId!=undefined && selectedDesignId!='')$('#previewPanel').show();
+                //showDesignPreviewModal(parseInt(selectedDesignId));
             });
 
             function showDesignPreviewModal(designId) {
