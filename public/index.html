@@ -800,7 +800,8 @@
                         "postal_code": fieldMappings.postal_code ? `{{Event.${dataExtensionKey}.${fieldMappings.postal_code}}}` : '',
                         "country_field": fieldMappings.country,
                         "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : '',
-                        "selectedDesignId" : $('#designIdSelect').val()
+                        "selectedDesignId" : $('#designIdSelect').val(),
+                        "MID" : sfmcMID
                     }
                 ];
                 payload['configurationArguments'] = payload['configurationArguments'] || {};
@@ -823,6 +824,7 @@
                     configured: true 
                 };
                 payload['metaData'] = payload['metaData'] || {};
+                payload.metaData.midForVerification = sfmcMID;
                 payload['metaData'].isConfigured = true;
                 payload['errors'] = null;
                 console.log('Updated payload:', JSON.stringify(payload));

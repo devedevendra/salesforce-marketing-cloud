@@ -221,7 +221,7 @@ app.get('/config.json', (req, res) => {
                 "body": "",
                 "header": "",
                 "format": "json",
-                "useJwt": true,
+                "useJwt": false,
                 "timeout": 10000
             }
         },
@@ -229,19 +229,19 @@ app.get('/config.json', (req, res) => {
             "save": {
                 "url": `${APP_URL}/save`,
                 "verb": "POST",
-                "useJwt": true,
+                "useJwt": false,
                 "configured": true
             },
             "publish": {
                 "url": `${APP_URL}/publish`,
                 "verb": "POST",
-                "useJwt": true,
+                "useJwt": false,
                 "configured": true
             },
             "validate": {
                 "url": `${APP_URL}/validate`,
                 "verb": "POST",
-                "useJwt": true,
+                "useJwt": false,
                 "configured": true
             }
         },
@@ -251,7 +251,7 @@ app.get('/config.json', (req, res) => {
                 "height": 800,
                 "width": 1000,
                 "fullscreen": false,
-                "useJwt": true // Add this line!
+                "useJwt": false // Add this line!
             }
         },
         "schema": {
@@ -338,6 +338,11 @@ app.get('/config.json', (req, res) => {
                                 "dataType": "Text",
                                 "isNullable": true,
                                 "direction": "in"
+                            },
+                            "MID": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
                             }
                         }
                     ]
@@ -352,7 +357,7 @@ app.get('/config.json', (req, res) => {
 // Serve static files (after the dynamic routes)
 app.use(express.static('public'));
 
-app.post('/save', verifyJWT, (req, res) => {
+app.post('/save', (req, res) => {
     console.log('Save endpoint called with body:', req.body);
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
@@ -363,10 +368,10 @@ app.post('/save', verifyJWT, (req, res) => {
     console.log('Save endpoint responded with success');
 });
 
-app.post('/execute', verifyJWT, async (req, res) => {
+app.post('/execute',   async (req, res) => {
     console.log('Execute endpoint called with body:', JSON.stringify(req.body));
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
-    const { inArguments } = req.decoded;
+    const { inArguments } = req.body;
     if (!inArguments || !inArguments[0]) {
         console.error('No inArguments provided in execute request');
         return res.status(400).json({ error: 'No inArguments provided' });
@@ -381,10 +386,40 @@ app.post('/execute', verifyJWT, async (req, res) => {
     const postalCode = args.postal_code || 'Unknown';
     const country = args.country || 'Unknown';
     const designId =  parseInt(args.selectedDesignId || 'Unknown');
+    const mid = args.MID;
+
+    var authToken;
 
     console.log(`Processing contact - First Name: ${firstName}, Last Name: ${lastName}, Street: ${street}, City: ${city}, State: ${state}, Postal Code: ${postalCode}, Country: ${country}`);
     try {
-        const authToken = await getDesignToken();
+
+                const pcmLoginApiUrl = 'https://apiqa.pcmintegrations.com/auth/marketing-cloud-login';
+                
+                console.log(`Checking if user exists: ${pcmLoginApiUrl}`);
+                let encryptedMID = await encryptString_node(mid, CIPHER_KEY);
+                const tokenresponse = await fetch(pcmLoginApiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        uniqueID: encryptedMID
+                    })
+                });
+
+                const tokenresponseBody = await tokenresponse.json(); // Always try to parse the JSON body
+                console.log('response:',tokenresponseBody);
+                console.log('PCM API Response Status Code:', tokenresponse.status);
+                if (tokenresponse.status === 200) {
+                    // 1. 200 OK
+                    authToken =tokenresponseBody.token;
+                    console.log(tokenresponseBody);
+                } else if (tokenresponse.status === 404) {
+                    // 2. 404 Not Found
+                    console.log(tokenresponseBody);
+                }
+                
+        
         const requestBody = {
             "returnAddress": {
                 "zipCode": "12019",
@@ -450,7 +485,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
     
 });
 
-app.post('/publish', verifyJWT, (req, res) => {
+app.post('/publish',   (req, res) => {
     console.log('Publish endpoint called with body:', req.body);
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
@@ -461,7 +496,7 @@ app.post('/publish', verifyJWT, (req, res) => {
     console.log('Publish endpoint responded with success');
 });
 
-app.post('/validate', verifyJWT, (req, res) => {
+app.post('/validate',  (req, res) => {
     console.log('Validate endpoint called with body:', req.body);
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
