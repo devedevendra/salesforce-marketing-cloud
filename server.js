@@ -1,7 +1,7 @@
 const crypto = require('node:crypto'); // Added for encryption/decryption
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const session = require('express-session'); // Added for session management
+
 const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
@@ -12,24 +12,11 @@ const app = express();
 app.use(express.json());
 app.use(express.text({ type: 'application/jwt' }));
 
-
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const APP_URL = process.env.APP_URL || 'https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com';
 //const CLIENT_ID = process.env.CLIENT_ID;
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const CIPHER_KEY = process.env.CIPHER_KEY;
-
-
-// Session Configuration
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'a-very-strong-random-session-secret-key', // CHANGE THIS! Use a strong, random string from ENV
-    resave: false, // Don't save session if unmodified
-    saveUninitialized: false, // Don't create session until something stored
-    cookie: {
-        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production (requires HTTPS)
-        httpOnly: true, // Prevents client-side JS from reading the cookie
-        maxAge: 1000 * 60 * 60 * 24 // Optional: Session cookie expiry (e.g., 24 hours)
-    }
-}));
 
 // --- START: Encryption and Decryption Functions ---
 /**
@@ -149,8 +136,6 @@ const verifyJWT = (req, res, next) => {
     console.log('Request Headers:', JSON.stringify(req.headers));
     console.log('Verifying JWT for request:', req.method, req.url);
     let token;
-    const tokenStringFromSession = req.session.userVerificationKey;
-    console.log('tokenStringFromSession '+tokenStringFromSession);
     const authHeader = req.headers.authorization || req.headers.Authorization;
     if (authHeader) {
         console.log('Authorization header found:', authHeader);
@@ -160,14 +145,20 @@ const verifyJWT = (req, res, next) => {
         token = req.body;
     }
 
+    const decodedPayloadForLookup = jwt.decode(token); // Does not verify signature
+    if (!decodedPayloadForLookup) {
+        console.error('Could not decode SFMC token (it might be malformed).');
+        return res.status(400).json({ error: 'Malformed token.' });
+    }
+    console.log('decodedPayloadForLookup'+ JSON.stringify(decodedPayloadForLookup));
+
+
     if (!token) {
         console.error('No token provided in request');
         return res.status(401).json({ error: 'No token provided' });
     }
 
-    
-
-    jwt.verify(token, tokenStringFromSession, (err, decoded) => {
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
             console.error('JWT verification failed:', err.message);
             return res.status(401).json({ error: 'Invalid token' });
@@ -580,17 +571,6 @@ app.post('/api/verify', async (req, res) => {
         console.log('PCM API Response Status Code:', response.status);
         if (response.status === 200) {
             // 1. 200 OK
-            const userSpecificSecretKey = responseBody.jwtSecret; // This IS the token string
-            req.session.userVerificationKey = userSpecificSecretKey; 
-            console.log(`Stored userVerificationKey in session: ${req.session.userVerificationKey ? 'Yes' : 'No'}`);
-            req.session.save(err => { // Explicitly save the session
-                if (err) {
-                    console.error('Session save error in /api/verify:', err);
-                    //return res.status(500).json({ success: false, message: 'Failed to save session.', errorCode: "SESSION_SAVE_ERROR" });
-                }
-                console.log('Session saved successfully in /api/verify. User-specific secret key stored. Session ID:', req.sessionID);
-                
-            });
             return res.status(200).json({
                 success: true,
                 existingUser: true,
@@ -598,22 +578,6 @@ app.post('/api/verify', async (req, res) => {
                 JWT: responseBody.jwtSecret // Assuming the jwtSecret is directly in the responseBody
                                         // Or however you derive/access the JWT from the response
             });
-        }if (response.status === 200 && responseBody.jwtSecret) {
-            const userSpecificSecretKey = responseBody.jwtSecret;
-            req.session.userVerificationKey = userSpecificSecretKey; // Store the user-specific secret key in session
-
-            
-            console.log(`Stored userVerificationKey in session: ${req.session.userVerificationKey ? 'Yes' : 'No'}`);
-            
-            req.session.save(err => { // Explicitly save the session
-                if (err) {
-                    console.error('Session save error in /api/verify:', err);
-                    return res.status(500).json({ success: false, message: 'Failed to save session.', errorCode: "SESSION_SAVE_ERROR" });
-                }
-                console.log('Session saved successfully in /api/verify. User-specific secret key stored. Session ID:', req.sessionID);
-                
-            });
-
         } else if (response.status === 404) {
             // 2. 404 Not Found
             return res.status(200).json({
