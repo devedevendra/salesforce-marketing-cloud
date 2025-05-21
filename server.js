@@ -166,7 +166,7 @@ const verifyJWT = async (req, res, next) => {
             console.log('PCM API Response Status Code:', response.status);
             if (response.status === 200) {
                 // 1. 200 OK
-                JWT_SECRET = esponseBody.jwtSecret;
+                JWT_SECRET = responseBody.jwtSecret;
                 
             } else if (response.status === 404) {
                 // 2. 404 Not Found
