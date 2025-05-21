@@ -206,7 +206,7 @@ const verifyJWT = async (req, res, next) => {
 
         } else {
             console.error('MID not found in the expected location within unverified JWT payload:', unverifiedPayload);
-            return res.status(400).send('Bad Request: MID missing or JWT structure incorrect.');
+            //return res.status(400).send('Bad Request: MID missing or JWT structure incorrect.');
         }
     } catch (e) {
         console.error('Error decoding JWT for peeking:', e.message);
