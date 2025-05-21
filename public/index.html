@@ -88,8 +88,8 @@
         <h3>PCM Direct Mail</h3>
         <p>Map fields from the entry source Data Extension to process.</p>
         <form id="configForm" class="row" >
-            <div class="col-md-6 order-md-1 border-end" style="border:1px solid #f5f5f5">
-                    <h4 class="mb-3">Recipient address</h4>
+            <div class="col-md-6 order-md-1 border-end" style="border-right:3px solid #f5f5f5">
+                    <h5 class="mb-3">Recipient address</h5>
                     <!--div class="form-group">
                         <label>Data Extension Key:</label>
                         <input type="text" class="form-control" id="dataExtensionKey" readonly>
@@ -164,7 +164,7 @@
             </div>
         
             <div class="col-md-6 order-md-2 mb-4">
-                <h4 class="mb-3">Return address</h4>
+                <h5 class="mb-3">Return address</h5>
                  
                 <div class="row">
                     <div class="form-group col-md-6 mb-3">
@@ -816,19 +816,14 @@
                 console.log('Updated field selections:', fieldMappings);
             }
 
-            $('#configForm').on('change', 'select[name$="Field"]', function() {
+            $('#configForm').on('change', 'select[name$="Field"] , input[name$="Field"]', function() {
                 const fieldType = $(this).attr('name').replace('Field', '');
                 const fieldName = $(this).val();
                 fieldMappings[fieldType] = fieldName;
                 console.log(`Updated field mapping - ${fieldType}: ${fieldName}`);
             });
 
-            $('#configForm').on('change', 'input[name$="Field"]', function() {
-                const fieldType = $(this).attr('name').replace('Field', '');
-                const fieldName = $(this).val();
-                fieldMappings[fieldType] = fieldName;
-                console.log(`Updated field mapping - ${fieldType}: ${fieldName}`);
-            });
+            
 
             $('#saveButton').click(function() {
                 console.log('Save button clicked');
