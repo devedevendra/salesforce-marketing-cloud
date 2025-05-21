@@ -554,8 +554,10 @@ app.post('/execute', verifyJWT, async (req, res) => {
             }
         }
         const data = await response.json();
-        res.json(data);
+        //res.json(data);
         console.log('Postcard order sent successfully');
+        return res.status(200).json(data);
+        
     } catch (error) {
         console.error('Error sending postcard order:', error);
         res.status(500).json({ error: `Failed to send postcard order: ${error.message}` });
