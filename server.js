@@ -580,7 +580,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
     
 });
 
-app.post('/publish', verifyJWT, (req, res) => {
+app.post('/publish', (req, res) => {
     console.log('Publish endpoint called with body:', req.body);
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
