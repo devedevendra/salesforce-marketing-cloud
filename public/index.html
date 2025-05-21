@@ -87,66 +87,122 @@
     <div class="container mt-4" id="configPanel">
         <h3>PCM Direct Mail</h3>
         <p>Map fields from the entry source Data Extension to process.</p>
-        
         <form id="configForm" >
-            <!--div class="form-group">
-                <label>Data Extension Key:</label>
-                <input type="text" class="form-control" id="dataExtensionKey" readonly>
-            </div-->
-            <div class="form-group">
-                <label for="firstNameField">First Name Field:</label>
-                <select class="form-control" id="firstNameField" name="firstNameField">
-                    <option value="">-- Select a Field --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="lastNameField">Last Name Field:</label>
-                <select class="form-control" id="lastNameField" name="lastNameField">
-                    <option value="">-- Select a Field --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="streetField">Street Field:</label>
-                <select class="form-control" id="streetField" name="streetField">
-                    <option value="">-- Select a Field --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="cityField">City Field:</label>
-                <select class="form-control" id="cityField" name="cityField">
-                    <option value="">-- Select a Field --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="stateField">State Field:</label>
-                <select class="form-control" id="stateField" name="stateField">
-                    <option value="">-- Select a Field --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="postalCodeField">Postal Code Field:</label>
-                <select class="form-control" id="postalCodeField" name="postalCodeField">
-                    <option value="">-- Select a Field --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="countryField">Country Field:</label>
-                <select class="form-control" id="countryField" name="countryField">
-                    <option value="">-- Select a Field --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="designIdSelect">Select Design:</label>
-                <select class="form-control" id="designIdSelect" name="designId">
-                    <option value="">-- Select a Design --</option>
-                </select>
-            </div>
-            <div class="form-group" id="previewPanel" style="display: none;">
-                <a href="javascript:void(0);" onclick="showPreview();" >View Design Proof</a>
-            </div>
+        <div class="col-md-6 order-md-1">
+                <h4 class="mb-3">Recipient address</h4>
+                <!--div class="form-group">
+                    <label>Data Extension Key:</label>
+                    <input type="text" class="form-control" id="dataExtensionKey" readonly>
+                </div-->
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="firstNameField">First Name Field:</label>
+                        <select class="form-control" id="firstNameField" name="firstNameField">
+                            <option value="">-- Select Mapping --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="lastNameField">Last Name:</label>
+                        <select class="form-control" id="lastNameField" name="lastNameField">
+                            <option value="">-- Select Mapping --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="streetField">Street:</label>
+                        <select class="form-control" id="streetField" name="streetField">
+                            <option value="">-- Select Mapping --</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="cityField">City:</label>
+                        <select class="form-control" id="cityField" name="cityField">
+                            <option value="">-- Select Mapping --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="stateField">State Field:</label>
+                        <select class="form-control" id="stateField" name="stateField">
+                            <option value="">-- Select a Field --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="postalCodeField">Postal Code:</label>
+                        <select class="form-control" id="postalCodeField" name="postalCodeField">
+                            <option value="">-- Select a Field --</option>
+                        </select>
+                    </div>
+                </div>
+                <!--div class="form-group">
+                    <label for="countryField">Country Field:</label>
+                    <select class="form-control" id="countryField" name="countryField">
+                        <option value="">-- Select a Field --</option>
+                    </select>
+                </div-->
+                <div class="form-group">
+                    <label for="designIdSelect">Select Design:</label>
+                    <select class="form-control" id="designIdSelect" name="designId">
+                        <option value="">-- Select a Design --</option>
+                    </select>
+                </div>
+                <div class="form-group" id="previewPanel" style="display: none;">
+                    <a href="javascript:void(0);" onclick="showPreview();" >View Design Proof</a>
+                </div>
+                
+                <!--button type="button" class="btn btn-primary" id="saveButton">Save</button-->
             
-            <!--button type="button" class="btn btn-primary" id="saveButton">Save</button-->
+        </div>
+        <div class="row">
+            <div class="col-md-6 order-md-2 mb-4">
+                <h4 class="mb-3">Return address</h4>
+                 
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="rfirstNameField">First Name:</label>
+                        <input type="text" class="form-control" id="rfirstNameField" placeholder="First Name" required>
+                        
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="rlastNameField">Last Name:</label>
+                        <input type="text" class="form-control" id="rlastNameField" placeholder="Last Name" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="rstreetField">Street:</label>
+                        <input type="text" class="form-control" id="rstreetField" placeholder="Street Name" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="rcityField">City:</label>
+                        <input type="text" class="form-control" id="rcityField" placeholder="City" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="rstateField">State:</label>
+                        <input type="text" class="form-control" id="rstateField" placeholder="State" required>
+                    </div>
+                </div>
+
+            </div>
+        </div>
         </form>
+
     </div>
     <div class="container mt-4" id="regPanel">
         
