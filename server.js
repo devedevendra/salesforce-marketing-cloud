@@ -137,7 +137,16 @@ const verifyJWT = async (req, res, next) => {
     console.log('Verifying JWT for request:', req.method, req.url);
     let unverifiedPayload;
     let peekedMid;
-
+    let token;
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    if (authHeader) {
+        console.log('Authorization header found:', authHeader);
+        token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+    } else if (req.headers['content-type'] === 'application/jwt') {
+        console.log('Content-Type is application/jwt, using request body as token');
+        token = req.body;
+    }
+    console.log('token',token);
     try {
         unverifiedPayload = jwt.decode(req.body);
         if (unverifiedPayload &&
@@ -213,15 +222,7 @@ const verifyJWT = async (req, res, next) => {
         return res.status(400).send('Bad Request: Invalid JWT structure.');
     }
     console.log('unverifiedPayload:', JSON.stringify(unverifiedPayload));
-    let token;
-    const authHeader = req.headers.authorization || req.headers.Authorization;
-    if (authHeader) {
-        console.log('Authorization header found:', authHeader);
-        token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
-    } else if (req.headers['content-type'] === 'application/jwt') {
-        console.log('Content-Type is application/jwt, using request body as token');
-        token = req.body;
-    }
+    
 
     if (!token) {
         console.error('No token provided in request');
