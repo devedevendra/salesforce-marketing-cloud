@@ -87,9 +87,9 @@
     <div class="container mt-4" id="configPanel">
         <h3>PCM Direct Mail</h3>
         <p>Map fields from the entry source Data Extension to process.</p>
-        <form id="configForm" >
-            <div class="col-md-6 order-md-1">
-                    <h4 class="mb-3">Recipient address</h4>
+        <form id="configForm" class="row" >
+            <div class="col-md-6 order-md-1 border-end">
+                    <h2 class="mb-3">Recipient address</h2>
                     <!--div class="form-group">
                         <label>Data Extension Key:</label>
                         <input type="text" class="form-control" id="dataExtensionKey" readonly>
@@ -160,7 +160,7 @@
             </div>
         
             <div class="col-md-6 order-md-2 mb-4">
-                <h4 class="mb-3">Return address</h4>
+                <h2 class="mb-3">Return address</h2>
                  
                 <div class="row">
                     <div class="form-group col-md-6 mb-3">
@@ -784,7 +784,7 @@
 
                 fieldSelects.forEach(selectId => {
                     const $select = $(`#${selectId}`);
-                    $select.empty().append('<option value="">-- Select a Field --</option>');
+                    $select.empty().append('<option value="">-- Select Mapping --</option>');
                     fields.forEach(field => {
                         $select.append(`<option value="${field.key}">${field.name}</option>`);
                     });
@@ -813,6 +813,13 @@
             }
 
             $('#configForm').on('change', 'select[name$="Field"]', function() {
+                const fieldType = $(this).attr('name').replace('Field', '');
+                const fieldName = $(this).val();
+                fieldMappings[fieldType] = fieldName;
+                console.log(`Updated field mapping - ${fieldType}: ${fieldName}`);
+            });
+
+            $('#configForm').on('change', 'input[name$="Field"]', function() {
                 const fieldType = $(this).attr('name').replace('Field', '');
                 const fieldName = $(this).val();
                 fieldMappings[fieldType] = fieldName;
@@ -854,7 +861,13 @@
                         "country_field": fieldMappings.country,
                         "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : '',
                         "selectedDesignId" : $('#designIdSelect').val(),
-                        "mid" : sfmcMID
+                        "mid" : sfmcMID,
+                        "rfirst_name": fieldMappings.rfirst_name ? fieldMappings.rfirst_name : '',
+                        "rlast_name": fieldMappings.rlast_name ? fieldMappings.rlast_name : '',
+                        "rstreet": fieldMappings.rstreet ? fieldMappings.rstreet : '',
+                        "rcity": fieldMappings.rcity ? fieldMappings.rcity  : '',
+                        "rstate": fieldMappings.rstate ? fieldMappings.rstate : '',
+                        "rpostal_code": fieldMappings.rpostal_code ? fieldMappings.rpostal_code : '',
                     }
                 ];
                 payload['configurationArguments'] = payload['configurationArguments'] || {};

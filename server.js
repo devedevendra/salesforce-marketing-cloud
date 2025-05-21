@@ -335,7 +335,37 @@ app.get('/config.json', (req, res) => {
                                 "dataType": "Text",
                                 "isNullable": true,
                                 "direction": "in"
-                            }
+                            },
+                            "rfirst_name": {
+                                "dataType": "Text",
+                                "isNullable": false,
+                                "direction": "in"
+                            },
+                            "rlast_name": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "rstreet": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "rcity": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "rstate": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "rpostal_code": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
                         }
                     ]
                 }
@@ -380,6 +410,13 @@ app.post('/execute', verifyJWT, async (req, res) => {
     const designId =  parseInt(args.selectedDesignId || 'Unknown');
     const mid  =  (args.mid || 'Unknown');
 
+    const rfirstName = args.rfirst_name || 'Unknown';
+    const rlastName = args.rlast_name || 'Unknown';
+    const rstreet = args.rstreet || 'Unknown';
+    const rcity = args.rcity || 'Unknown';
+    const rstate = args.rstate || 'Unknown';
+    const rpostalCode = args.rpostal_code || 'Unknown';
+
     console.log(`Processing contact - First Name: ${firstName}, Last Name: ${lastName}, Street: ${street}, City: ${city}, State: ${state}, Postal Code: ${postalCode}, Country: ${country}`);
     try {
         var authToken = '';
@@ -411,13 +448,13 @@ app.post('/execute', verifyJWT, async (req, res) => {
 
         const requestBody = {
             "returnAddress": {
-                "zipCode": "12019",
-                "state": "New York",
-                "lastName": "Zaragoza",
-                "firstName": "Eddie",
-                "city": "Ballston Lake",
+                "zipCode": rpostalCode,
+                "state": rstate,
+                "lastName": rlastName,
+                "firstName": rfirstName,
+                "city": rcity,
                 "address2": "",
-                "address": "4a Premont way"
+                "address": rstreet
             },
             "recipients": [
                 {
@@ -426,7 +463,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
                     "state": state,
                     "lastName": lastName,
                     "firstName": firstName,
-                    "extRefNbr": "00QDp00000FyQQFMA3", // Replace with your logic for external reference number
+                    "extRefNbr": "", // Replace with your logic for external reference number
                     "city": city,
                     "address": street
                 }
