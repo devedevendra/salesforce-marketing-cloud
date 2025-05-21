@@ -176,6 +176,7 @@ const verifyJWT = async (req, res, next) => {
             if (response.status === 200) {
                 // 1. 200 OK
                 JWT_SECRET = responseBody.jwtSecret;
+                req.token = responseBody.token;
                 
             } else if (response.status === 404) {
                 // 2. 404 Not Found
@@ -500,31 +501,11 @@ app.post('/execute', verifyJWT, async (req, res) => {
     console.log(`Processing contact - First Name: ${firstName}, Last Name: ${lastName}, Street: ${street}, City: ${city}, State: ${state}, Postal Code: ${postalCode}, Country: ${country}`);
     try {
         var authToken = '';
-        const pcmLoginApiUrl = 'https://apiqa.pcmintegrations.com/auth/marketing-cloud-login';
-                
-                console.log(`Checking if user exists: ${pcmLoginApiUrl}`);
-                let encryptedMID = await encryptString_node(mid, CIPHER_KEY);
-                const tokenresponse = await fetch(pcmLoginApiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        uniqueID: encryptedMID
-                    })
-                });
-
-                const tokenresponseBody = await tokenresponse.json(); // Always try to parse the JSON body
-                console.log('response:',tokenresponseBody);
-                console.log('PCM API Response Status Code:', tokenresponse.status);
-                if (tokenresponse.status === 200) {
+        
                     // 1. 200 OK
-                    authToken =tokenresponseBody.token;
-                    console.log(tokenresponseBody);
-                } else if (tokenresponse.status === 404) {
-                    // 2. 404 Not Found
-                    console.log(tokenresponseBody);
-                }
+        authToken =req.token;
+        console.log('authToken507:',authToken);
+                
 
         const requestBody = {
             "returnAddress": {
