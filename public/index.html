@@ -847,7 +847,7 @@
                 } else {
                     $('#previewPanel').hide();
                 }
-                
+
                 console.log('Updated field selections:', fieldMappings);
             }
 
@@ -896,8 +896,8 @@
                         "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : '',
                         "selectedDesignId" : $('#designIdSelect').val(),
                         "mid" : sfmcMID,
-                        "rfirst_name": fieldMappings.rfirst_name ? fieldMappings.rfirst_name : '',
-                        "rlast_name": fieldMappings.rlast_name ? fieldMappings.rlast_name : '',
+                        "rfirst_name": fieldMappings.rfirstName ? fieldMappings.rfirstName : '',
+                        "rlast_name": fieldMappings.rlastName ? fieldMappings.rlastName : '',
                         "rstreet": fieldMappings.rstreet ? fieldMappings.rstreet : '',
                         "rcity": fieldMappings.rcity ? fieldMappings.rcity  : '',
                         "rstate": fieldMappings.rstate ? fieldMappings.rstate : '',
