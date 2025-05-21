@@ -135,7 +135,7 @@ async function decryptString_node(encryptedString, decryptionKey) {
 const verifyJWT = (req, res, next) => {
     console.log('Request Headers:', JSON.stringify(req.headers));
     console.log('Verifying JWT for request:', req.method, req.url);
-    let unverifiedPayload = jwt.decode(tokenString);
+    let unverifiedPayload = jwt.decode(req.body);
     console.log('unverifiedPayload:', JSON.stringify(unverifiedPayload));
     let token;
     const authHeader = req.headers.authorization || req.headers.Authorization;
