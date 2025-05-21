@@ -139,7 +139,7 @@ const verifyJWT = async (req, res, next) => {
     let peekedMid;
 
     try {
-        unverifiedPayload = jwt.decode(tokenString);
+        unverifiedPayload = jwt.decode(req.body);
         if (unverifiedPayload &&
             unverifiedPayload.inArguments &&
             unverifiedPayload.inArguments.length > 0 &&
