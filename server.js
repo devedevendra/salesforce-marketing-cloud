@@ -591,7 +591,7 @@ app.post('/publish', verifyJWT, (req, res) => {
     console.log('Publish endpoint responded with success');
 });
 
-app.post('/validate', verifyJWT, (req, res) => {
+app.post('/validate', (req, res) => {
     console.log('Validate endpoint called with body:', req.body);
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
