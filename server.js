@@ -457,9 +457,9 @@ app.get('/config.json', (req, res) => {
 // Serve static files (after the dynamic routes)
 app.use(express.static('public'));
 
-app.post('/save', verifyJWT, (req, res) => {
+app.post('/save',(req, res) => {
     console.log('Save endpoint called with body:', JSON.stringify(req.body));
-    console.log('Decoded JWT:', JSON.stringify(req.decoded));
+    //console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
         success: true,
         configured: true,
