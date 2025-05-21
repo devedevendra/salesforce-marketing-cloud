@@ -227,7 +227,8 @@ const verifyJWT = async (req, res, next) => {
         console.error('No token provided in request');
         return res.status(401).json({ error: 'No token provided' });
     }
-
+    console.log(token);
+    console.log(JWT_SECRET);
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
             console.error('JWT verification failed:', err.message);
