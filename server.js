@@ -382,7 +382,7 @@ app.get('/config.json', (req, res) => {
 app.use(express.static('public'));
 
 app.post('/save', verifyJWT, (req, res) => {
-    console.log('Save endpoint called with body:', JSON.stringify(req));
+    console.log('Save endpoint called with body:', JSON.stringify(req.body));
     console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
         success: true,
