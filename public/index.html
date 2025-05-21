@@ -175,7 +175,7 @@
                 
                     <div class="form-group col-md-6 mb-3">
                         <label for="rlastNameField">Last Name:</label>
-                        <input type="text" class="form-control" id="rlastNameField"name="rlastNameField" placeholder="Last Name" required>
+                        <input type="text" class="form-control" id="rlastNameField" name="rlastNameField" placeholder="Last Name" required>
                     </div>
                 </div>
                 <div class="row">
@@ -391,13 +391,20 @@
             let endpoints = {};
             let dataExtensionKey = '';
             let fieldMappings = {
-                first_name: '',
-                last_name: '',
+                firstName: '',
+                lastName: '',
                 street: '',
                 city: '',
                 state: '',
-                postal_code: '',
-                country: ''
+                postalCode: '',
+                // country: '', // Add if countryField is re-enabled in HTML
+                designId: '',
+                rfirstName: '',
+                rlastName: '',
+                rstreet: '',
+                rcity: '',
+                rstate: '',
+                rpostalCode: ''
             };
             let designsData = []; // To store the received designs data
             const modal = document.getElementById("designPreviewModal");
@@ -453,6 +460,17 @@
                     fieldMappings.state = inArgs.state_field || '';
                     fieldMappings.postal_code = inArgs.postal_code_field || '';
                     fieldMappings.country = inArgs.country_field || '';
+
+                    fieldMappings.designId = inArgs.selectedDesignId || '';
+
+                    // Load return address values
+                    fieldMappings.rfirstName = inArgs.rfirst_name || '';
+                    fieldMappings.rlastName = inArgs.rlast_name || '';
+                    fieldMappings.rstreet = inArgs.rstreet || '';
+                    fieldMappings.rcity = inArgs.rcity || '';
+                    fieldMappings.rstate = inArgs.rstate || '';
+                    fieldMappings.rpostalCode = inArgs.rpostal_code || ''; // Corrected key
+
                     console.log('Loaded saved field mappings:', fieldMappings);
                     console.log('Loaded saved DE key:', dataExtensionKey);
                     $('#dataExtensionKey').val(dataExtensionKey);
@@ -813,6 +831,23 @@
                 $('#stateField').val(fieldMappings.state);
                 $('#postalCodeField').val(fieldMappings.postal_code);
                 $('#countryField').val(fieldMappings.country);
+
+                // Return address fields (inputs) - these are direct values
+                $('#rfirstNameField').val(fieldMappings.rfirstName);
+                $('#rlastNameField').val(fieldMappings.rlastName);
+                $('#rstreetField').val(fieldMappings.rstreet);
+                $('#rcityField').val(fieldMappings.rcity);
+                $('#rstateField').val(fieldMappings.rstate);
+                $('#rpostalCodeField').val(fieldMappings.rpostalCode);
+
+                // Design select
+                $('#designIdSelect').val(fieldMappings.designId);
+                if (fieldMappings.designId && fieldMappings.designId !== '') {
+                    $('#previewPanel').show();
+                } else {
+                    $('#previewPanel').hide();
+                }
+                
                 console.log('Updated field selections:', fieldMappings);
             }
 
@@ -866,7 +901,7 @@
                         "rstreet": fieldMappings.rstreet ? fieldMappings.rstreet : '',
                         "rcity": fieldMappings.rcity ? fieldMappings.rcity  : '',
                         "rstate": fieldMappings.rstate ? fieldMappings.rstate : '',
-                        "rpostal_code": fieldMappings.rpostal_code ? fieldMappings.rpostal_code : '',
+                        "rpostalCode": fieldMappings.rpostalCode ? fieldMappings.rpostalCode : '',
                     }
                 ];
                 payload['configurationArguments'] = payload['configurationArguments'] || {};

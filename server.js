@@ -361,7 +361,7 @@ app.get('/config.json', (req, res) => {
                                 "isNullable": true,
                                 "direction": "in"
                             },
-                            "rpostal_code": {
+                            "rpostalCode": {
                                 "dataType": "Text",
                                 "isNullable": true,
                                 "direction": "in"
@@ -415,7 +415,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
     const rstreet = args.rstreet || 'Unknown';
     const rcity = args.rcity || 'Unknown';
     const rstate = args.rstate || 'Unknown';
-    const rpostalCode = args.rpostal_code || 'Unknown';
+    const rpostalCode = args.rpostalCode || 'Unknown';
 
     console.log(`Processing contact - First Name: ${firstName}, Last Name: ${lastName}, Street: ${street}, City: ${city}, State: ${state}, Postal Code: ${postalCode}, Country: ${country}`);
     try {
