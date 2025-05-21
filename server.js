@@ -12,7 +12,7 @@ const app = express();
 app.use(express.json());
 app.use(express.text({ type: 'application/jwt' }));
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+let JWT_SECRET =  '';
 const APP_URL = process.env.APP_URL || 'https://salesforce-marketing-cloud-25ceb7c2d745.herokuapp.com';
 //const CLIENT_ID = process.env.CLIENT_ID;
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -135,7 +135,83 @@ async function decryptString_node(encryptedString, decryptionKey) {
 const verifyJWT = (req, res, next) => {
     console.log('Request Headers:', JSON.stringify(req.headers));
     console.log('Verifying JWT for request:', req.method, req.url);
-    let unverifiedPayload = jwt.decode(req.body);
+    let unverifiedPayload;
+    let peekedMid;
+
+    try {
+        unverifiedPayload = jwt.decode(tokenString);
+        if (unverifiedPayload &&
+            unverifiedPayload.inArguments &&
+            unverifiedPayload.inArguments.length > 0 &&
+            unverifiedPayload.inArguments[0].mid) {
+            peekedMid = unverifiedPayload.inArguments[0].mid;
+            console.log('Peeked MID:', peekedMid);
+
+            const pcmLoginApiUrl = 'https://apiqa.pcmintegrations.com/auth/marketing-cloud-login';
+
+            console.log(`Checking if user exists: ${pcmLoginApiUrl}`);
+            let encryptedMID = await encryptString_node(peekedMid, CIPHER_KEY);
+            const response = await fetch(pcmLoginApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uniqueID: encryptedMID
+                })
+            });
+
+            const responseBody = await response.json(); // Always try to parse the JSON body
+            console.log('response:',responseBody);
+            console.log('PCM API Response Status Code:', response.status);
+            if (response.status === 200) {
+                // 1. 200 OK
+                JWT_SECRET = esponseBody.jwtSecret;
+                
+            } else if (response.status === 404) {
+                // 2. 404 Not Found
+                return res.status(200).json({
+                    success: true,
+                    existingUser: false,
+                    // You might want to include the error message from the response if needed
+                    message: responseBody.error && responseBody.error.data && responseBody.error.data[0] ? responseBody.error.data[0].message : "Unable to locate account",
+                    errorCode: responseBody.error ? responseBody.error.code : 404
+                });
+            } else if (response.status === 500) {
+                // 3. 500 Internal Server Error
+                let errorMessage = "An unexpected error has occurred.";
+                if (responseBody.error && responseBody.error.data && responseBody.error.data[0] && responseBody.error.data[0].message) {
+                    errorMessage = responseBody.error.data[0].message;
+                }
+                return res.status(500).json({
+                    success: false,
+                    message: errorMessage,
+                    errorCode: responseBody.error ? responseBody.error.code : 500
+                });
+            } else {
+                // Handle other unexpected statuses
+                let errorMessage = `Unexpected status code: ${response.status}`;
+                if (responseBody.error && responseBody.error.message) {
+                    errorMessage = responseBody.error.message;
+                } else if (responseBody.message) {
+                    errorMessage = responseBody.message;
+                }
+                return res.status(500).json({
+                    success: false,
+                    message: errorMessage,
+                    errorCode: response.status,
+                    details: responseBody // include the full body for debugging if desired
+                });
+            }
+
+        } else {
+            console.error('MID not found in the expected location within unverified JWT payload:', unverifiedPayload);
+            return res.status(400).send('Bad Request: MID missing or JWT structure incorrect.');
+        }
+    } catch (e) {
+        console.error('Error decoding JWT for peeking:', e.message);
+        return res.status(400).send('Bad Request: Invalid JWT structure.');
+    }
     console.log('unverifiedPayload:', JSON.stringify(unverifiedPayload));
     let token;
     const authHeader = req.headers.authorization || req.headers.Authorization;
