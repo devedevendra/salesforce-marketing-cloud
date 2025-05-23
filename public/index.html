@@ -163,21 +163,21 @@
                     <div id="letterOptionsContainer" class="row mt-3" style="display: none;">
                     <div class="col-md-12">
                         <h5>Letter Options</h5>
-                        <div class="form-group">
+                        <div class="form-group col-md-6">
                             <label for="letterColorField">Color:</label>
                             <select id="letterColorField" name="letterColorField" class="form-control">
                                 <option value="false">Black & White</option>
                                 <option value="true">Full Color</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group col-md-6">
                             <label for="letterPrintBothSidesField">Print on Both Sides:</label>
                             <select id="letterPrintBothSidesField" name="letterPrintBothSidesField" class="form-control">
                                 <option value="false">No</option>
                                 <option value="true">Yes</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group col-md-6">
                             <label for="letterInsertAddressPageField">Insert Addressing Page:</label>
                             <select id="letterInsertAddressPageField" name="letterInsertAddressPageField" class="form-control">
                                 <option value="false">No</option>
@@ -190,17 +190,17 @@
                     <div id="envelopeOptionsContainer" class="row mt-3" style="display: none;">
                         <div class="col-md-12">
                             <h5>Envelope Options</h5>
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="envelopeTypeField">Envelope Type:</label>
                                 <select id="envelopeTypeField" name="envelopeTypeField" class="form-control">
                                     </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="envelopeFontField">Envelope Font:</label>
                                 <select id="envelopeFontField" name="envelopeFontField" class="form-control">
                                     </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="envelopeFontColorField">Envelope Font Color:</label>
                                 <select id="envelopeFontColorField" name="envelopeFontColorField" class="form-control">
                                     </select>
@@ -210,7 +210,7 @@
                     <div id="snapApartOptionsContainer" class="row mt-3" style="display: none;">
                         <div class="col-md-12">
                             <h5>Snap Apart Options</h5>
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="snapApartColorField">Snap Apart Color:</label>
                                 <select id="snapApartColorField" name="snapApartColorField" class="form-control">
                                     <option value="false">Black & White</option>
@@ -222,13 +222,13 @@
 
                     <div id="snapApartAddressingOptionsContainer" class="row mt-3" style="display: none;">
                         <div class="col-md-12">
-                            <h5>Addressing Option (for Snap Apart)</h5>
-                            <div class="form-group">
+                            <h5>Addressing Options</h5>
+                            <div class="form-group col-md-6">
                                 <label for="snapApartFontField">Snap Apart Font:</label>
                                 <select id="snapApartFontField" name="snapApartFontField" class="form-control">
                                     </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="snapApartFontColorField">Font Color:</label>
                                 <select id="snapApartFontColorField" name="snapApartFontColorField" class="form-control">
                                     </select>
@@ -1090,7 +1090,7 @@
 
                 // If we've reached this point, it means there are design fields to render.
                 // So, we should add the title. Since we removed any existing one, we can just add it.
-                $container.before('<h5 id="dynamicDesignFieldsContainerTitle" class="col-md-12 mb-2">Map Design Fields</h5>');
+                $container.before('<h5 id="dynamicDesignFieldsContainerTitle" class=" mb-2">Map Design Fields</h5>');
 
 
 
