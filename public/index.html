@@ -882,7 +882,7 @@
                     const $label = $(`<label for="${selectId}">${fieldLabel}${isMandatory ? ' <span style="color:red;">*</span>' : ''}:</label>`);
                     const $select = $(`<select class="form-control" id="${selectId}" name="dynamicField_${fieldKey}"></select>`);
 
-                    $select.append('<option value="">-- Select Data Extension Field --</option>');
+                    $select.append('<option value="">-- Select Mapping --</option>');
                     if (dataExtensionSchemaFields && dataExtensionSchemaFields.length > 0) {
                         dataExtensionSchemaFields.forEach(deField => {
                             $select.append(`<option value="${deField.key}">${deField.name}</option>`);
