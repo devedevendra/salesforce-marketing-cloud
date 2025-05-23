@@ -1056,6 +1056,17 @@
                 // For other product types like 'postcard', all specific option containers will remain hidden.
             }
 
+            function populateSelectWithOptions(selectId, optionsArray, defaultOptionText = "-- Select --") {
+                const $select = $(`#${selectId}`);
+                $select.empty(); // Clear existing options
+                if (defaultOptionText) {
+                    $select.append(`<option value="">${defaultOptionText}</option>`);
+                }
+                optionsArray.forEach(option => {
+                    $select.append(`<option value="${option.key}">${option.label}</option>`);
+                });
+            }
+
             function renderDynamicDesignFields(designId) {
                 const $container = $('#dynamicDesignFieldsContainer');
                 $container.empty(); // Clear previous dynamic fields
@@ -1150,14 +1161,18 @@
                             }
                         }
                     }
+
+                    // Render and set product-specific options (like letter/envelope)
+                    const selectedDesignObject = designsData.find(d => d.designID === parseInt(fieldMappings.designId));
+                    
+                    renderProductSpecificOptions(selectedDesignObject); // This will show/hide and set values
                 } else {
                     $('#previewPanel').hide();
                     renderDynamicDesignFields(null); // Clear dynamic fields if no design is selected
                     $('#dynamicDesignFieldsContainerTitle').remove();
                 }
 
-                // Render and set product-specific options (like letter/envelope)
-                renderProductSpecificOptions(selectedDesignObject); // This will show/hide and set values
+                
 
                 console.log('Updated field selections:', fieldMappings);
             }
