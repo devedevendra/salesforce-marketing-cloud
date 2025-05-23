@@ -159,7 +159,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div id="dynamicDesignFieldsContainer" class="row p-3">
+                        <div id="dynamicDesignFieldsContainer" class="col-md-12 mb-3">
                         </div>
                     </div>
                     
@@ -856,7 +856,7 @@
 
                 const selectedDesign = designsData.find(d => d.designID === parseInt(designId));
 
-                if (!selectedDesign || !selectedDesign.designFields || selectedDesign.designFields.length === 0) {
+                
                 // If no valid selected design or it has no designFields, exit.
                 // Container remains empty, title remains removed.
                 if (!selectedDesign || !selectedDesign.designFields || selectedDesign.designFields.length === 0) {
