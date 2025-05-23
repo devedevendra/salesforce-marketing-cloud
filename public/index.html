@@ -160,6 +160,81 @@
                             <a href="javascript:void(0);" onclick="showPreview();" >View Design Proof</a>
                         </div>
                     </div>
+                    <div id="letterOptionsContainer" class="row mt-3" style="display: none;">
+                    <div class="col-md-12">
+                        <h5>Letter Options</h5>
+                        <div class="form-group">
+                            <label for="letterColorField">Color:</label>
+                            <select id="letterColorField" name="letterColorField" class="form-control">
+                                <option value="false">Black & White</option>
+                                <option value="true">Full Color</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="letterPrintBothSidesField">Print on Both Sides:</label>
+                            <select id="letterPrintBothSidesField" name="letterPrintBothSidesField" class="form-control">
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="letterInsertAddressPageField">Insert Addressing Page:</label>
+                            <select id="letterInsertAddressPageField" name="letterInsertAddressPageField" class="form-control">
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                    <div id="envelopeOptionsContainer" class="row mt-3" style="display: none;">
+                        <div class="col-md-12">
+                            <h5>Envelope Options</h5>
+                            <div class="form-group">
+                                <label for="envelopeTypeField">Envelope Type:</label>
+                                <select id="envelopeTypeField" name="envelopeTypeField" class="form-control">
+                                    </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="envelopeFontField">Envelope Font:</label>
+                                <select id="envelopeFontField" name="envelopeFontField" class="form-control">
+                                    </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="envelopeFontColorField">Envelope Font Color:</label>
+                                <select id="envelopeFontColorField" name="envelopeFontColorField" class="form-control">
+                                    </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="snapApartOptionsContainer" class="row mt-3" style="display: none;">
+                        <div class="col-md-12">
+                            <h5>Snap Apart Options</h5>
+                            <div class="form-group">
+                                <label for="snapApartColorField">Snap Apart Color:</label>
+                                <select id="snapApartColorField" name="snapApartColorField" class="form-control">
+                                    <option value="false">Black & White</option>
+                                    <option value="true">Full Color</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="snapApartAddressingOptionsContainer" class="row mt-3" style="display: none;">
+                        <div class="col-md-12">
+                            <h5>Addressing Option (for Snap Apart)</h5>
+                            <div class="form-group">
+                                <label for="snapApartFontField">Snap Apart Font:</label>
+                                <select id="snapApartFontField" name="snapApartFontField" class="form-control">
+                                    </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="snapApartFontColorField">Font Color:</label>
+                                <select id="snapApartFontColorField" name="snapApartFontColorField" class="form-control">
+                                    </select>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row" id="dynamicDesignFieldsContainer">
                         
                     </div>
@@ -242,6 +317,64 @@
         </div>
     </div>
     <script>
+
+        // Add these constants at the beginning of your script or in an accessible scope
+        const ENVELOPE_TYPES = [
+            { key: "doubleWindow", label: "Double Window" },
+            { key: "fullWindow", label: "Full Window" },
+            { key: "Regular", label: "Regular" },
+            { key: "BiFold", label: "Bi-Fold Regular" },
+        ];
+
+        const ENVELOPE_FONTS = [
+                {
+                    key: "Standard",
+                    label: "Standard",
+                    font: "font-serif",
+                },
+                {
+                    key: "Bradley Hand",
+                    label: "Bradley Hand",
+                    font: bradleyHand.className,
+                },
+                {
+                    key: "Blackjack",
+                    label: "Blackjack",
+                    font: blackjack.className,
+                },
+                {
+                    key: "FG Cathies Hand",
+                    label: "FG Cathies Hand",
+                    font: cathiesHand.className,
+                },
+                {
+                    key: "Crappy Dan",
+                    label: "Crappy Dan",
+                    font: crappyDan.className,
+                },
+                {
+                    key: "Dakota",
+                    label: "Dakota",
+                    font: dakota.className,
+                },
+                {
+                    key: "Jenna Sue",
+                    label: "Jenna Sue",
+                    font: jennaSue.className,
+                },
+                {
+                    key: "Reenie Beanie",
+                    label: "Reenie Beanie",
+                    font: reenieBeanie.className,
+                },
+                ]
+
+        const FONT_COLORS = [
+            { key: "Black", label: "Black" },
+            { key: "Blue", label: "Blue" },
+            { key: "Green", label: "Green" },
+        ];
+
         let sfmcMID;
         let sfmcRestHost;
         let initialDataLoaded = false;
@@ -411,7 +544,20 @@
                 rcity: '',
                 rstate: '',
                 rpostalCode: '',
-                dynamicFields: {}
+                dynamicFields: {},
+
+                // Letter/Envelope options
+                letterColor: 'false',
+                letterPrintBothSides: 'false',
+                letterInsertAddressPage: 'false',
+                envelopeType: '',
+                envelopeFont: '',
+                envelopeFontColor: '',
+
+                // New Snap Apart options
+                snapApartColor: 'false', // Default to 'false' (Black & White)
+                snapApartFont: '',
+                snapApartFontColor: ''
             };
             let designsData = []; // To store the received designs data
             const modal = document.getElementById("designPreviewModal");
@@ -477,6 +623,21 @@
                     fieldMappings.rcity = inArgs.rcity || '';
                     fieldMappings.rstate = inArgs.rstate || '';
                     fieldMappings.rpostalCode = inArgs.rpostal_code || ''; // Corrected key
+
+                    // Load Letter/Envelope options
+                    // Use String() for boolean-like fields to match select values 'true'/'false'
+                    fieldMappings.letterColor = inArgs.letterColor !== undefined ? String(inArgs.letterColor) : 'false';
+                    fieldMappings.letterPrintBothSides = inArgs.letterPrintBothSides !== undefined ? String(inArgs.letterPrintBothSides) : 'false';
+                    fieldMappings.letterInsertAddressPage = inArgs.letterInsertAddressPage !== undefined ? String(inArgs.letterInsertAddressPage) : 'false';
+                    fieldMappings.envelopeType = inArgs.envelopeType || '';
+                    fieldMappings.envelopeFont = inArgs.envelopeFont || '';
+                    fieldMappings.envelopeFontColor = inArgs.envelopeFontColor || '';
+
+                    // Load Snap Apart options
+                    fieldMappings.snapApartColor = inArgs.snapApartColor !== undefined ? String(inArgs.snapApartColor) : 'false';
+                    fieldMappings.snapApartFont = inArgs.snapApartFont || '';
+                    fieldMappings.snapApartFontColor = inArgs.snapApartFontColor || '';
+                    
 
                     // Load dynamic field mappings by iterating keys
                     fieldMappings.dynamicFields = {}; // Initialize
@@ -763,6 +924,10 @@
                 //showDesignPreviewModal(parseInt(selectedDesignId));
                 fieldMappings.dynamicFields = {}; // Reset mappings when design changes
                 renderDynamicDesignFields(selectedDesignId);
+
+                 // Handle product-specific options
+                const selectedDesignObject = designsData.find(d => d.designID === parseInt(selectedDesignId));
+                renderProductSpecificOptions(selectedDesignObject);
             });
 
             function showDesignPreviewModal(designId) {
@@ -842,6 +1007,53 @@
                 fieldMappings.country = fieldMappings.country || (dataExtensionSchemaFields.some(f => f.key === 'country') ? 'country' : '');
 
                 updateFieldSelections();
+            }
+
+            function renderProductSpecificOptions(selectedDesign) {
+                const $letterOptionsContainer = $('#letterOptionsContainer');
+                const $envelopeOptionsContainer = $('#envelopeOptionsContainer');
+                const $snapApartOptionsContainer = $('#snapApartOptionsContainer'); // Get new container
+                const $snapApartAddressingOptionsContainer = $('#snapApartAddressingOptionsContainer'); // Get new container
+
+                // Hide all product-specific containers by default
+                $letterOptionsContainer.hide();
+                $envelopeOptionsContainer.hide();
+                $snapApartOptionsContainer.hide(); // Hide new container
+                $snapApartAddressingOptionsContainer.hide(); // Hide new container
+
+                if (!selectedDesign) {
+                    return;
+                }
+
+                if (selectedDesign.productType === 'letter') {
+                    // Populate and set values for Letter/Envelope options
+                    populateSelectWithOptions('envelopeTypeField', ENVELOPE_TYPES, '-- Select Envelope Type --');
+                    populateSelectWithOptions('envelopeFontField', ENVELOPE_FONTS, '-- Select Envelope Font --');
+                    populateSelectWithOptions('envelopeFontColorField', FONT_COLORS, '-- Select Font Color --');
+
+                    $('#letterColorField').val(fieldMappings.letterColor || 'false');
+                    $('#letterPrintBothSidesField').val(fieldMappings.letterPrintBothSides || 'false');
+                    $('#letterInsertAddressPageField').val(fieldMappings.letterInsertAddressPage || 'false');
+                    $('#envelopeTypeField').val(fieldMappings.envelopeType);
+                    $('#envelopeFontField').val(fieldMappings.envelopeFont);
+                    $('#envelopeFontColorField').val(fieldMappings.envelopeFontColor);
+
+                    $letterOptionsContainer.show();
+                    $envelopeOptionsContainer.show();
+
+                } else if (selectedDesign.productType === 'snapapart') {
+                    // Populate and set values for Snap Apart options
+                    populateSelectWithOptions('snapApartFontField', ENVELOPE_FONTS, '-- Select Snap Apart Font --'); // Reusing ENVELOPE_FONTS
+                    populateSelectWithOptions('snapApartFontColorField', FONT_COLORS, '-- Select Font Color --'); // Reusing FONT_COLORS
+
+                    $('#snapApartColorField').val(fieldMappings.snapApartColor || 'false');
+                    $('#snapApartFontField').val(fieldMappings.snapApartFont);
+                    $('#snapApartFontColorField').val(fieldMappings.snapApartFontColor);
+
+                    $snapApartOptionsContainer.show();
+                    $snapApartAddressingOptionsContainer.show();
+                }
+                // For other product types like 'postcard', all specific option containers will remain hidden.
             }
 
             function renderDynamicDesignFields(designId) {
@@ -944,6 +1156,9 @@
                     $('#dynamicDesignFieldsContainerTitle').remove();
                 }
 
+                // Render and set product-specific options (like letter/envelope)
+                renderProductSpecificOptions(selectedDesignObject); // This will show/hide and set values
+
                 console.log('Updated field selections:', fieldMappings);
             }
 
@@ -1014,6 +1229,23 @@
                     }
                 }
 
+                // Add letter/envelope options IF the selected product type is 'letter'
+                const selectedDesignObject = designsData.find(d => d.designID === parseInt(fieldMappings.designId));
+                if (selectedDesignObject) {
+                    if (selectedDesignObject.productType === 'letter') {
+                        inArgumentsPayload.letterColor = fieldMappings.letterColor === 'true';
+                        inArgumentsPayload.letterPrintBothSides = fieldMappings.letterPrintBothSides === 'true';
+                        inArgumentsPayload.letterInsertAddressPage = fieldMappings.letterInsertAddressPage === 'true';
+                        inArgumentsPayload.envelopeType = fieldMappings.envelopeType;
+                        inArgumentsPayload.envelopeFont = fieldMappings.envelopeFont;
+                        inArgumentsPayload.envelopeFontColor = fieldMappings.envelopeFontColor;
+                    } else if (selectedDesignObject.productType === 'snapapart') {
+                        inArgumentsPayload.snapApartColor = fieldMappings.snapApartColor === 'true';
+                        inArgumentsPayload.snapApartFont = fieldMappings.snapApartFont;
+                        inArgumentsPayload.snapApartFontColor = fieldMappings.snapApartFontColor;
+                    }
+                }
+                
                 payload['arguments'] = payload['arguments'] || {};
                 payload['arguments'].execute = payload['arguments'].execute || {};
                 payload['arguments'].execute.inArguments = [inArgumentsPayload];
