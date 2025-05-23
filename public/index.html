@@ -158,9 +158,8 @@
                             <a href="javascript:void(0);" onclick="showPreview();" >View Design Proof</a>
                         </div>
                     </div>
-                    <div class="row">
-                        <div id="dynamicDesignFieldsContainer" class="col-md-12 mb-3">
-                        </div>
+                    <div class="row" id="dynamicDesignFieldsContainer">
+                        
                     </div>
                     
                     <!--button type="button" class="btn btn-primary" id="saveButton">Save</button-->
@@ -846,6 +845,7 @@
             function renderDynamicDesignFields(designId) {
                 const $container = $('#dynamicDesignFieldsContainer');
                 $container.empty(); // Clear previous dynamic fields
+                $('#dynamicDesignFieldsContainerTitle').remove();
                 // Do NOT reset fieldMappings.dynamicFields here if you want to preserve selections when re-rendering (e.g. on initial load)
                 // It should be reset if the designId genuinely changes to a new one via user interaction.
 
@@ -876,7 +876,7 @@
                     // Create unique ID for the select element
                     const selectId = `dynamicField_${fieldKey}_select`;
 
-                    const $fieldGroup = $('<div class="form-group col-md-12 mb-3"></div>'); // Full width for each dynamic field
+                    const $fieldGroup = $('<div class="form-group col-md-6 mb-3"></div>'); // Full width for each dynamic field
                     const $label = $(`<label for="${selectId}">${fieldLabel}${isMandatory ? ' <span style="color:red;">*</span>' : ''}:</label>`);
                     const $select = $(`<select class="form-control" id="${selectId}" name="dynamicField_${fieldKey}"></select>`);
 
