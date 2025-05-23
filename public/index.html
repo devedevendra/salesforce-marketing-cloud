@@ -43,15 +43,17 @@
     }
 
     .close-button {
-        color: #aaa;
+        color: rgb(31 115 211);
         float: right;
-        font-size: 28px;
+        /*font-size: 28px;*/
         font-weight: bold;
+        align-self: self-end;
+
     }
 
     .close-button:hover,
     .close-button:focus {
-        color: black;
+        color:rgb(15 68 134);
         text-decoration: none;
         cursor: pointer;
     }
@@ -230,7 +232,7 @@
     </div>
     <div id="designPreviewModal" class="modal">
         <div class="modal-content">
-            <span class="close-button">&times;</span>
+            <span class="close-button">Click here to Close Preview</span>
             <h5>Design Preview:</h5>
             <div id="pdfViewerContainerModal" style="display: none;">
                 <iframe id="pdfViewerModal" src="" frameborder="0"></iframe>
