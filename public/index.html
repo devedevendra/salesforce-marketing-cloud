@@ -178,7 +178,7 @@
                                     <option value="true">Yes</option>
                                 </select>
                             </div>
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-12">
                                 <label for="letterInsertAddressPageField">Insert Addressing Page:</label>
                                 <select id="letterInsertAddressPageField" name="letterInsertAddressPageField" class="form-control">
                                     <option value="false">No</option>
@@ -203,7 +203,7 @@
                                     <select id="envelopeFontField" name="envelopeFontField" class="form-control">
                                         </select>
                                 </div>
-                                <div class="form-group col-md-6">
+                                <div class="form-group col-md-12">
                                     <label for="envelopeFontColorField">Envelope Font Color:</label>
                                     <select id="envelopeFontColorField" name="envelopeFontColorField" class="form-control">
                                         </select>
@@ -215,7 +215,7 @@
                         <div class="col-md-12">
                             <h5>Snap Apart Options</h5>
                             <div class="row">
-                                <div class="form-group col-md-6">
+                                <div class="form-group col-md-12">
                                     <label for="snapApartColorField">Snap Apart Color:</label>
                                     <select id="snapApartColorField" name="snapApartColorField" class="form-control">
                                         <option value="false">Black & White</option>
@@ -1109,7 +1109,7 @@
                     // Create unique ID for the select element
                     const selectId = `dynamicField_${fieldKey}_select`;
 
-                    const $fieldGroup = $('<div class="form-group col-md-6 mb-3"></div>'); // Full width for each dynamic field
+                    const $fieldGroup = $('<div class="form-group col-md-12 mb-3"></div>'); // Full width for each dynamic field
                     const $label = $(`<label for="${selectId}">${fieldLabel}${isMandatory ? ' <span style="color:red;">*</span>' : ''}:</label>`);
                     const $select = $(`<select class="form-control" id="${selectId}" name="dynamicField_${fieldKey}"></select>`);
 
