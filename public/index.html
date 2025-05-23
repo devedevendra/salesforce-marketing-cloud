@@ -158,6 +158,10 @@
                             <a href="javascript:void(0);" onclick="showPreview();" >View Design Proof</a>
                         </div>
                     </div>
+                    <div class="row">
+                        <div id="dynamicDesignFieldsContainer" class="row p-3">
+                        </div>
+                    </div>
                     
                     <!--button type="button" class="btn btn-primary" id="saveButton">Save</button-->
                 
@@ -385,6 +389,7 @@
             $('#error').text('Error: Application URL not defined. Please set the APP_URL environment variable.').show();
         } else {
             const connection = new Postmonger.Session();
+            let dataExtensionSchemaFields = []; 
             let payload = {};
             let schema = [];
             let tokens ={};
@@ -404,7 +409,8 @@
                 rstreet: '',
                 rcity: '',
                 rstate: '',
-                rpostalCode: ''
+                rpostalCode: '',
+                dynamicFields: {}
             };
             let designsData = []; // To store the received designs data
             const modal = document.getElementById("designPreviewModal");
@@ -470,6 +476,17 @@
                     fieldMappings.rcity = inArgs.rcity || '';
                     fieldMappings.rstate = inArgs.rstate || '';
                     fieldMappings.rpostalCode = inArgs.rpostal_code || ''; // Corrected key
+
+                    // Load dynamic field mappings by iterating keys
+                    fieldMappings.dynamicFields = {}; // Initialize
+                    for (const key in inArgs) {
+                        if (inArgs.hasOwnProperty(key) && key.startsWith('df_') && key.endsWith('_mappedTo')) {
+                            const designFieldKey = key.substring(3, key.length - '_mappedTo'.length);
+                            if (inArgs[key]) { // Ensure there's a value
+                                fieldMappings.dynamicFields[designFieldKey] = inArgs[key];
+                            }
+                        }
+                    }
 
                     console.log('Loaded saved field mappings:', fieldMappings);
                     console.log('Loaded saved DE key:', dataExtensionKey);
@@ -699,6 +716,7 @@
             
 
             async function fetchDesigns(authToken) {
+                $('#previewPanel').hide();
                 console.log('Fetching designs from backend (/getDesigns)');
                     await fetch(`${window.APP_URL}/getDesigns`,{ // New endpoint name
                         method: 'POST',
@@ -742,6 +760,8 @@
                 if(selectedDesignId!=undefined && selectedDesignId!='')$('#previewPanel').show();
                 else $('#previewPanel').hide();
                 //showDesignPreviewModal(parseInt(selectedDesignId));
+                fieldMappings.dynamicFields = {}; // Reset mappings when design changes
+                renderDynamicDesignFields(selectedDesignId);
             });
 
             function showDesignPreviewModal(designId) {
@@ -790,7 +810,7 @@
                 
 
                 console.log('Populating field dropdowns for schema:', JSON.stringify(schema));
-                const fields = schema
+                dataExtensionSchemaFields = schema
                     .filter(item => item.key.includes(dataExtensionKey))
                     .map(item => {
                         const fieldName = item.key.split('.').pop();
@@ -807,20 +827,79 @@
                 fieldSelects.forEach(selectId => {
                     const $select = $(`#${selectId}`);
                     $select.empty().append('<option value="">-- Select Mapping --</option>');
-                    fields.forEach(field => {
+                    dataExtensionSchemaFields.forEach(field => {
                         $select.append(`<option value="${field.key}">${field.name}</option>`);
                     });
                 });
 
-                fieldMappings.first_name = fieldMappings.first_name || (fields.some(f => f.key === 'first_name') ? 'first_name' : '');
-                fieldMappings.last_name = fieldMappings.last_name || (fields.some(f => f.key === 'last_name') ? 'last_name' : '');
-                fieldMappings.street = fieldMappings.street || (fields.some(f => f.key === 'street') ? 'street' : '');
-                fieldMappings.city = fieldMappings.city || (fields.some(f => f.key === 'city') ? 'city' : '');
-                fieldMappings.state = fieldMappings.state || (fields.some(f => f.key === 'state') ? 'state' : '');
-                fieldMappings.postal_code = fieldMappings.postal_code || (fields.some(f => f.key === 'postal_code') ? 'postal_code' : '');
-                fieldMappings.country = fieldMappings.country || (fields.some(f => f.key === 'country') ? 'country' : '');
+                fieldMappings.first_name = fieldMappings.first_name || (dataExtensionSchemaFields.some(f => f.key === 'first_name') ? 'first_name' : '');
+                fieldMappings.last_name = fieldMappings.last_name || (dataExtensionSchemaFields.some(f => f.key === 'last_name') ? 'last_name' : '');
+                fieldMappings.street = fieldMappings.street || (dataExtensionSchemaFields.some(f => f.key === 'street') ? 'street' : '');
+                fieldMappings.city = fieldMappings.city || (dataExtensionSchemaFields.some(f => f.key === 'city') ? 'city' : '');
+                fieldMappings.state = fieldMappings.state || (dataExtensionSchemaFields.some(f => f.key === 'state') ? 'state' : '');
+                fieldMappings.postal_code = fieldMappings.postal_code || (dataExtensionSchemaFields.some(f => f.key === 'postal_code') ? 'postal_code' : '');
+                fieldMappings.country = fieldMappings.country || (dataExtensionSchemaFields.some(f => f.key === 'country') ? 'country' : '');
 
                 updateFieldSelections();
+            }
+
+            function renderDynamicDesignFields(designId) {
+                const $container = $('#dynamicDesignFieldsContainer');
+                $container.empty(); // Clear previous dynamic fields
+                // Do NOT reset fieldMappings.dynamicFields here if you want to preserve selections when re-rendering (e.g. on initial load)
+                // It should be reset if the designId genuinely changes to a new one via user interaction.
+
+                if (!designId || designId === '') {
+                    $('#dynamicDesignFieldsContainerTitle').remove(); // Remove title if it exists
+                    return;
+                }
+
+                const selectedDesign = designsData.find(d => d.designID === parseInt(designId));
+
+                if (!selectedDesign || !selectedDesign.designFields || selectedDesign.designFields.length === 0) {
+                // If no valid selected design or it has no designFields, exit.
+                // Container remains empty, title remains removed.
+                if (!selectedDesign || !selectedDesign.designFields || selectedDesign.designFields.length === 0) {
+                    return; 
+                }
+
+                // If we've reached this point, it means there are design fields to render.
+                // So, we should add the title. Since we removed any existing one, we can just add it.
+                $container.before('<h5 id="dynamicDesignFieldsContainerTitle" class="col-md-12 mb-2">Map Design Fields</h5>');
+
+
+
+                selectedDesign.designFields.forEach(df => {
+                    const fieldKey = df.fieldKey;
+                    const fieldLabel = df.fieldLabel || fieldKey; // Use fieldKey if label is missing
+                    const isMandatory = df.mandatory || false;
+                    // Create unique ID for the select element
+                    const selectId = `dynamicField_${fieldKey}_select`;
+
+                    const $fieldGroup = $('<div class="form-group col-md-12 mb-3"></div>'); // Full width for each dynamic field
+                    const $label = $(`<label for="${selectId}">${fieldLabel}${isMandatory ? ' <span style="color:red;">*</span>' : ''}:</label>`);
+                    const $select = $(`<select class="form-control" id="${selectId}" name="dynamicField_${fieldKey}"></select>`);
+
+                    $select.append('<option value="">-- Select Data Extension Field --</option>');
+                    if (dataExtensionSchemaFields && dataExtensionSchemaFields.length > 0) {
+                        dataExtensionSchemaFields.forEach(deField => {
+                            $select.append(`<option value="${deField.key}">${deField.name}</option>`);
+                        });
+                    } else {
+                        $select.append('<option value="" disabled>No Data Extension fields available</option>');
+                        console.warn("dataExtensionSchemaFields is empty or not yet populated when rendering dynamic fields.");
+                    }
+
+
+                    // Event listener for changes on this dynamic select
+                    $select.on('change', function() {
+                        fieldMappings.dynamicFields[fieldKey] = $(this).val();
+                        console.log(`Updated dynamic field mapping - ${fieldKey}: ${$(this).val()}`);
+                    });
+
+                    $fieldGroup.append($label).append($select);
+                    $container.append($fieldGroup);
+                });
             }
 
             function updateFieldSelections() {
@@ -844,8 +923,23 @@
                 $('#designIdSelect').val(fieldMappings.designId);
                 if (fieldMappings.designId && fieldMappings.designId !== '') {
                     $('#previewPanel').show();
+                    renderDynamicDesignFields(fieldMappings.designId);
+
+                    // Now, set the values for the (potentially) newly rendered dynamic fields
+                    if (fieldMappings.dynamicFields) {
+                        for (const fieldKey in fieldMappings.dynamicFields) {
+                            if (fieldMappings.dynamicFields.hasOwnProperty(fieldKey)) {
+                                const selectedValue = fieldMappings.dynamicFields[fieldKey];
+                                const selectId = `dynamicField_${fieldKey}_select`;
+                                $(`#${selectId}`).val(selectedValue);
+                                // console.log(`Attempted to set dynamic field ${selectId} to ${selectedValue}`);
+                            }
+                        }
+                    }
                 } else {
                     $('#previewPanel').hide();
+                    renderDynamicDesignFields(null); // Clear dynamic fields if no design is selected
+                    $('#dynamicDesignFieldsContainerTitle').remove();
                 }
 
                 console.log('Updated field selections:', fieldMappings);
@@ -875,35 +969,54 @@
 
             function updatePayload() {
                 console.log('Updating payload with field mappings:', fieldMappings);
+                const inArgumentsPayload = {
+                    "dataExtension": dataExtensionKey,
+                    // Static DE mappings (use fieldMappings.firstName etc.)
+                    "first_name_field": fieldMappings.firstName,
+                    "first_name": fieldMappings.firstName ? `{{Event.${dataExtensionKey}.${fieldMappings.firstName}}}` : '',
+                    "last_name_field": fieldMappings.lastName,
+                    "last_name": fieldMappings.lastName ? `{{Event.${dataExtensionKey}.${fieldMappings.lastName}}}` : '',
+                    "street_field": fieldMappings.street,
+                    "street": fieldMappings.street ? `{{Event.${dataExtensionKey}.${fieldMappings.street}}}` : '',
+                    "city_field": fieldMappings.city,
+                    "city": fieldMappings.city ? `{{Event.${dataExtensionKey}.${fieldMappings.city}}}` : '',
+                    "state_field": fieldMappings.state,
+                    "state": fieldMappings.state ? `{{Event.${dataExtensionKey}.${fieldMappings.state}}}` : '',
+                    "postal_code_field": fieldMappings.postalCode,
+                    "postal_code": fieldMappings.postalCode ? `{{Event.${dataExtensionKey}.${fieldMappings.postalCode}}}` : '',
+                    // "country_field": fieldMappings.country,
+                    // "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : '',
+                    
+                    "selectedDesignId" : fieldMappings.designId, // Use mapping
+                    "mid" : sfmcMID,
+
+                    // Return address fields
+                    "rfirst_name": $('#rfirstNameField').val(), // Get current value from input
+                    "rlast_name": $('#rlastNameField').val(),
+                    "rstreet": $('#rstreetField').val(),
+                    "rcity": $('#rcityField').val(),
+                    "rstate": $('#rstateField').val(),
+                    "rpostal_code": $('#rpostalCodeField').val() // Corrected key
+                };
+
+                // Add dynamic field mappings to the payload
+                if (fieldMappings.dynamicFields) {
+                    for (const fieldKey in fieldMappings.dynamicFields) {
+                        if (fieldMappings.dynamicFields.hasOwnProperty(fieldKey) && fieldMappings.dynamicFields[fieldKey]) {
+                            const deColumnName = fieldMappings.dynamicFields[fieldKey];
+                            // Key for storing which DE column is mapped
+                            inArgumentsPayload[`df_${fieldKey}_mappedTo`] = deColumnName; 
+                            // Key for the actual Journey Builder personalization string
+                            inArgumentsPayload[`df_${fieldKey}_value`] = `{{Event.${dataExtensionKey}.${deColumnName}}}`;
+                        }
+                    }
+                }
+
                 payload['arguments'] = payload['arguments'] || {};
                 payload['arguments'].execute = payload['arguments'].execute || {};
-                payload['arguments'].execute.inArguments = [
-                    {
-                        "dataExtension": dataExtensionKey,
-                        "first_name_field": fieldMappings.first_name,
-                        "first_name": `{{Event.${dataExtensionKey}.${fieldMappings.first_name}}}`,
-                        "last_name_field": fieldMappings.last_name,
-                        "last_name": fieldMappings.last_name ? `{{Event.${dataExtensionKey}.${fieldMappings.last_name}}}` : '',
-                        "street_field": fieldMappings.street,
-                        "street": fieldMappings.street ? `{{Event.${dataExtensionKey}.${fieldMappings.street}}}` : '',
-                        "city_field": fieldMappings.city,
-                        "city": fieldMappings.city ? `{{Event.${dataExtensionKey}.${fieldMappings.city}}}` : '',
-                        "state_field": fieldMappings.state,
-                        "state": fieldMappings.state ? `{{Event.${dataExtensionKey}.${fieldMappings.state}}}` : '',
-                        "postal_code_field": fieldMappings.postal_code,
-                        "postal_code": fieldMappings.postal_code ? `{{Event.${dataExtensionKey}.${fieldMappings.postal_code}}}` : '',
-                        "country_field": fieldMappings.country,
-                        "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : '',
-                        "selectedDesignId" : $('#designIdSelect').val(),
-                        "mid" : sfmcMID,
-                        "rfirst_name": fieldMappings.rfirstName ? fieldMappings.rfirstName : '',
-                        "rlast_name": fieldMappings.rlastName ? fieldMappings.rlastName : '',
-                        "rstreet": fieldMappings.rstreet ? fieldMappings.rstreet : '',
-                        "rcity": fieldMappings.rcity ? fieldMappings.rcity  : '',
-                        "rstate": fieldMappings.rstate ? fieldMappings.rstate : '',
-                        "rpostalCode": fieldMappings.rpostalCode ? fieldMappings.rpostalCode : '',
-                    }
-                ];
+                payload['arguments'].execute.inArguments = [inArgumentsPayload];
+
+
                 payload['configurationArguments'] = payload['configurationArguments'] || {};
                 payload['configurationArguments'].save = { 
                     url: `${window.APP_URL}/save`, 
