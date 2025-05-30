@@ -442,11 +442,31 @@ app.get('/config.json', (req, res) => {
                                 "isNullable": true,
                                 "direction": "in"
                             },
-                            "rpostalCode": {
+                            "rpostal_code": {
                                 "dataType": "Text",
                                 "isNullable": true,
                                 "direction": "in"
                             },
+                            "product_type": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "dynamic_fields": {
+                                "dataType": "Text", // Will store stringified JSON
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "letter_options": {
+                                "dataType": "Text", // Will store stringified JSON
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "snapapart_options": {
+                                "dataType": "Text", // Will store stringified JSON
+                                "isNullable": true,
+                                "direction": "in"
+                            }
                         }
                     ]
                 }
@@ -496,7 +516,40 @@ app.post('/execute', verifyJWT, async (req, res) => {
     const rstreet = args.rstreet || 'Unknown';
     const rcity = args.rcity || 'Unknown';
     const rstate = args.rstate || 'Unknown';
-    const rpostalCode = args.rpostalCode || 'Unknown';
+    const rpostalCode = args.rpostal_code || 'Unknown';
+
+    const product_type = args.product_type;
+
+    let dynamicFieldsData = {};
+    if (args.dynamic_fields) {
+        try {
+            dynamicFieldsData = JSON.parse(args.dynamic_fields);
+            console.log('Parsed dynamic_fields:', dynamicFieldsData);
+        } catch (e) {
+            console.error('Error parsing dynamic_fields:', e);
+            // Optional: decide if this is a fatal error or continue with empty dynamicFieldsData
+        }
+    }
+
+    let letterOptionsData = {};
+    if (args.letter_options) {
+        try {
+            letterOptionsData = JSON.parse(args.letter_options);
+            console.log('Parsed letter_options:', letterOptionsData);
+        } catch (e) {
+            console.error('Error parsing letter_options:', e);
+        }
+    }
+
+    let snapapartOptionsData = {};
+    if (args.snapapart_options) {
+        try {
+            snapapartOptionsData = JSON.parse(args.snapapart_options);
+            console.log('Parsed snapapart_options:', snapapartOptionsData);
+        } catch (e) {
+            console.error('Error parsing snapapart_options:', e);
+        }
+    }
 
     console.log(`Processing contact - First Name: ${firstName}, Last Name: ${lastName}, Street: ${street}, City: ${city}, State: ${state}, Postal Code: ${postalCode}, Country: ${country}`);
     try {
@@ -505,6 +558,27 @@ app.post('/execute', verifyJWT, async (req, res) => {
                     // 1. 200 OK
         authToken =req.token;
         console.log('authToken507:',authToken);
+
+        // --- Prepare recipient variables from dynamic_fields ---
+        const recipientVariables = [];
+        if (dynamicFieldsData) {
+            for (const key in dynamicFieldsData) {
+                if (dynamicFieldsData.hasOwnProperty(key) && key.endsWith('_value')) {
+                    // Extracts "YOURKEY" from "df_YOURKEY_value"
+                    const baseKey = key.substring(3, key.length - '_value'.length); 
+                    // The `mappedTo` key would be `df_${baseKey}_mappedTo`
+                    const mappedToKeyName = `df_${baseKey}_mappedTo`;
+                    // Use the DE column name (from mappedTo) as the variable name if available, otherwise use the baseKey
+                    const variableName = dynamicFieldsData[mappedToKeyName] || baseKey;
+                    recipientVariables.push({
+                        name: variableName,
+                        value: dynamicFieldsData[key] // This is the actual value resolved by Journey Builder
+                    });
+                }
+            }
+        }
+        console.log('Recipient Variables:', JSON.stringify(recipientVariables));
+        // --- End Prepare recipient variables ---
                 
 
         const requestBody = {
@@ -520,7 +594,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
             "recipients": [
                 {
                     "zipCode": postalCode,
-                    "variables": [],
+                    "variables": recipientVariables,
                     "state": state,
                     "lastName": lastName,
                     "firstName": firstName,
@@ -533,6 +607,36 @@ app.post('/execute', verifyJWT, async (req, res) => {
             "globalDesignVariables": [],
             "designID": designId // Using the dynamic designId from args
         };
+
+        if(product_type==='letter'){
+            if (Object.keys(letterOptionsData).length > 0) {
+                console.log('Applying letter_options to requestBody (example):', letterOptionsData);
+                // Example: API might take print options directly or within a specific object
+                if (typeof letterOptionsData.letterColor !== 'undefined') {
+                    requestBody.color = letterOptionsData.letterColor; 
+                }
+                if(letterOptionsData.printBothSides!=undefined)requestBody.printOnBothSides = letterOptionsData.printBothSides;
+                if(letterOptionsData.insertAddressingPage!=undefined)requestBody.insertAddressingPage = letterOptionsData.letterInsertAddressPage;
+                requestBody.envelope = {};
+                if (letterOptionsData.envelopeType) requestBody.envelope.type = letterOptionsData.envelopeType;
+                if (letterOptionsData.envelopeFont) requestBody.envelope.font = letterOptionsData.envelopeFont;
+                if (letterOptionsData.envelopeFontColor) requestBody.envelope.fontColor = letterOptionsData.envelopeFontColor;
+            }
+        }
+
+        if(product_type==='snapapart'){
+            if (Object.keys(snapapartOptionsData).length > 0) {
+                console.log('Applying snapapartOptionsData to requestBody (example):', snapapartOptionsData);
+                // Example: API might take print options directly or within a specific object
+                if (typeof snapapartOptionsData.snapApartColor !== 'undefined') {
+                    requestBody.color = snapapartOptionsData.snapApartColor; 
+                }
+                requestBody.addressing = {};
+                if (snapapartOptionsData.envelopeFont) requestBody.addressing.font = snapapartOptionsData.snapApartFont;
+                if (snapapartOptionsData.envelopeFontColor) requestBody.addressing.fontColor = snapapartOptionsData.snapApartFontColor;
+            }
+        }
+
         console.log(JSON.stringify(requestBody));
         const response = await fetch('https://apiqa.pcmintegrations.com/order/postcard', {
             method: 'POST',

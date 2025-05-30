@@ -786,8 +786,7 @@
                         console.log("Verification successful. User not found/new user.");
 
                         $('#deLoadStatus').text('User not found. Please follow on-screen instructions.').show();
-                        $('#regPanel').hide();
-                        $('#configPanel').show();
+                        $('#regPanel').show();
                         // TODO: Implement UI prompt logic for API key, secret for new user registration.
                         // For example: showNewUserRegistrationForm();
                     } else {
@@ -1237,8 +1236,11 @@
                     "rstreet": $('#rstreetField').val(),
                     "rcity": $('#rcityField').val(),
                     "rstate": $('#rstateField').val(),
-                    "rpostal_code": $('#rpostalCodeField').val() // Corrected key
+                    "rpostal_code": $('#rpostalCodeField').val()
                 };
+
+                // Object to hold dynamic field mappings
+                const dynamicFieldsObject = {};
 
                 // Add dynamic field mappings to the payload
                 if (fieldMappings.dynamicFields) {
@@ -1246,27 +1248,48 @@
                         if (fieldMappings.dynamicFields.hasOwnProperty(fieldKey) && fieldMappings.dynamicFields[fieldKey]) {
                             const deColumnName = fieldMappings.dynamicFields[fieldKey];
                             // Key for storing which DE column is mapped
-                            inArgumentsPayload[`df_${fieldKey}_mappedTo`] = deColumnName; 
+                            dynamicFieldsObject[`df_${fieldKey}_mappedTo`] = deColumnName; 
                             // Key for the actual Journey Builder personalization string
-                            inArgumentsPayload[`df_${fieldKey}_value`] = `{{Event.${dataExtensionKey}.${deColumnName}}}`;
+                            dynamicFieldsObject[`df_${fieldKey}_value`] = `{{Event.${dataExtensionKey}.${deColumnName}}}`;
                         }
                     }
                 }
 
+                // If dynamic fields were processed, add the stringified object to the payload
+                if (Object.keys(dynamicFieldsObject).length > 0) {
+                    inArgumentsPayload.dynamic_fields = JSON.stringify(dynamicFieldsObject);
+                }
+
+                // Objects to hold product-specific options
+                const letterOptionsObject = {};
+                const snapapartOptionsObject = {};
+
                 // Add letter/envelope options IF the selected product type is 'letter'
                 const selectedDesignObject = designsData.find(d => d.designID === parseInt(fieldMappings.designId));
                 if (selectedDesignObject) {
+                    inArgumentsPayload.product_type = selectedDesignObject.productType;
+                    
                     if (selectedDesignObject.productType === 'letter') {
-                        inArgumentsPayload.letterColor = fieldMappings.letterColor === 'true';
-                        inArgumentsPayload.letterPrintBothSides = fieldMappings.letterPrintBothSides === 'true';
-                        inArgumentsPayload.letterInsertAddressPage = fieldMappings.letterInsertAddressPage === 'true';
-                        inArgumentsPayload.envelopeType = fieldMappings.envelopeType;
-                        inArgumentsPayload.envelopeFont = fieldMappings.envelopeFont;
-                        inArgumentsPayload.envelopeFontColor = fieldMappings.envelopeFontColor;
+                        letterOptionsObject.letterColor = fieldMappings.letterColor === 'true';
+                        letterOptionsObject.letterPrintBothSides = fieldMappings.letterPrintBothSides === 'true';
+                        letterOptionsObject.letterInsertAddressPage = fieldMappings.letterInsertAddressPage === 'true';
+                        letterOptionsObject.envelopeType = fieldMappings.envelopeType;
+                        letterOptionsObject.envelopeFont = fieldMappings.envelopeFont;
+                        letterOptionsObject.envelopeFontColor = fieldMappings.envelopeFontColor;
+
+                        // If letter options were processed, add the stringified object to the payload
+                        if (Object.keys(letterOptionsObject).length > 0) {
+                            inArgumentsPayload.letter_options = JSON.stringify(letterOptionsObject);
+                        }
                     } else if (selectedDesignObject.productType === 'snapapart') {
-                        inArgumentsPayload.snapApartColor = fieldMappings.snapApartColor === 'true';
-                        inArgumentsPayload.snapApartFont = fieldMappings.snapApartFont;
-                        inArgumentsPayload.snapApartFontColor = fieldMappings.snapApartFontColor;
+                        snapapartOptionsObject.snapApartColor = fieldMappings.snapApartColor === 'true';
+                        snapapartOptionsObject.snapApartFont = fieldMappings.snapApartFont;
+                        snapapartOptionsObject.snapApartFontColor = fieldMappings.snapApartFontColor;
+
+                        // If snap-apart options were processed, add the stringified object to the payload
+                        if (Object.keys(snapapartOptionsObject).length > 0) {
+                            inArgumentsPayload.snapapart_options = JSON.stringify(snapapartOptionsObject);
+                        }
                     }
                 }
 
