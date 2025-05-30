@@ -680,7 +680,7 @@ app.post('/api/verify', async (req, res) => {
                 uniqueID: encryptedMID
             })
         });
-
+        console.log('encryptedMID: ',encryptedMID);
         const responseBody = await response.json(); // Always try to parse the JSON body
         console.log('response:',responseBody);
         console.log('PCM API Response Status Code:', response.status);
