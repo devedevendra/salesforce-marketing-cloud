@@ -786,7 +786,8 @@
                         console.log("Verification successful. User not found/new user.");
 
                         $('#deLoadStatus').text('User not found. Please follow on-screen instructions.').show();
-                        $('#regPanel').show();
+                        $('#regPanel').hide();
+                        $('#configPanel').show();
                         // TODO: Implement UI prompt logic for API key, secret for new user registration.
                         // For example: showNewUserRegistrationForm();
                     } else {
