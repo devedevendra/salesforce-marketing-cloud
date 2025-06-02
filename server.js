@@ -17,6 +17,7 @@ const APP_URL = process.env.APP_URL || 'https://salesforce-marketing-cloud-25ceb
 //const CLIENT_ID = process.env.CLIENT_ID;
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const CIPHER_KEY = process.env.CIPHER_KEY;
+const PCM_ENDPOINT = process.env.PCM_ENDPOINT;
 
 // --- START: Encryption and Decryption Functions ---
 /**
@@ -156,7 +157,7 @@ const verifyJWT = async (req, res, next) => {
             peekedMid = unverifiedPayload.inArguments[0].mid;
             console.log('Peeked MID:', peekedMid);
 
-            const pcmLoginApiUrl = 'https://apiqa.pcmintegrations.com/auth/marketing-cloud-login';
+            const pcmLoginApiUrl = PCM_ENDPOINT+'/auth/marketing-cloud-login';
 
             console.log(`Checking if user exists: ${pcmLoginApiUrl}`);
             let encryptedMID = await encryptString_node(peekedMid, CIPHER_KEY);
@@ -638,7 +639,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
         }
 
         console.log(JSON.stringify(requestBody));
-        const response = await fetch('https://apiqa.pcmintegrations.com/order/postcard', {
+        const response = await fetch(PCM_ENDPOINT+'/order/postcard', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -737,7 +738,7 @@ app.post('/getDesigns',  async (req, res) => {
     const { token } = req.body; 
     try {
         //const authToken = await getDesignToken();
-        const response = await fetch('https://apiqa.pcmintegrations.com/design?perPage=1000', {
+        const response = await fetch(PCM_ENDPOINT+'/design?perPage=1000', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -771,7 +772,7 @@ app.post('/api/verify', async (req, res) => {
     
     try {
 
-        const pcmLoginApiUrl = 'https://apiqa.pcmintegrations.com/auth/marketing-cloud-login';
+        const pcmLoginApiUrl = PCM_ENDPOINT+'/auth/marketing-cloud-login';
 
         console.log(`Checking if user exists: ${pcmLoginApiUrl}`);
         let encryptedMID = await encryptString_node(mid, CIPHER_KEY);
@@ -861,7 +862,7 @@ app.post('/api/registration', async (req, res) => {
     try {
         // --- Call 1: Login to PCM API to get an auth token ---
         console.log('Registration Step 1: Calling PCM login API with provided credentials...');
-        const loginApiUrl = 'https://apiqa.pcmintegrations.com/auth/login';
+        const loginApiUrl = PCM_ENDPOINT+'/auth/login';
         
         const loginResponse = await fetch(loginApiUrl, {
             method: 'POST',
@@ -911,7 +912,7 @@ app.post('/api/registration', async (req, res) => {
 
         // --- Call 2: Enable Marketing Cloud integration using the auth token ---
         console.log('Registration Step 2: Calling PCM enable Marketing Cloud API...');
-        const enableMcApiUrl = 'https://apiqa.pcmintegrations.com/integration/enable-marketing-cloud';
+        const enableMcApiUrl = PCM_ENDPOINT+'/integration/enable-marketing-cloud';
         let encryptedMID = await encryptString_node(mid, CIPHER_KEY);
         // Construct the body for the second API call
         // Now using the jwtSecret received from the client's request body
@@ -967,7 +968,7 @@ app.post('/api/registration', async (req, res) => {
 
          // --- Call 3: Fetch Designs using the authToken from Call 1 ---
          console.log('Registration Step 3: Fetching designs...');
-         const designsApiUrl = 'https://apiqa.pcmintegrations.com/design?perPage=1000';
+         const designsApiUrl = PCM_ENDPOINT+'/design?perPage=1000';
          let designsData = null;
          let designsError = null; // To store any error message specifically from fetching designs
  
