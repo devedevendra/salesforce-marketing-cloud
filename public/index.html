@@ -85,6 +85,7 @@
     </style>
 </head>
 <body>
+    <div  ><img src="images/pcmlogo.png" /> </div>
     <div id="error" style="color: red; display: none;"></div>
     <div class="container mt-4" id="configPanel">
          
@@ -194,17 +195,17 @@
                             <h5>Envelope Options</h5>
                             <div class="row">
                                 <div class="form-group col-md-6">
-                                    <label for="envelopeTypeField">Envelope Type:</label>
+                                    <label for="envelopeTypeField">Type:</label>
                                     <select id="envelopeTypeField" name="envelopeTypeField" class="form-control">
                                         </select>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label for="envelopeFontField">Envelope Font:</label>
+                                    <label for="envelopeFontField">Font:</label>
                                     <select id="envelopeFontField" name="envelopeFontField" class="form-control">
                                         </select>
                                 </div>
                                 <div class="form-group col-md-12">
-                                    <label for="envelopeFontColorField">Envelope Font Color:</label>
+                                    <label for="envelopeFontColorField">Font Color:</label>
                                     <select id="envelopeFontColorField" name="envelopeFontColorField" class="form-control">
                                         </select>
                                 </div>
@@ -216,10 +217,10 @@
                             <h5>Snap Apart Options</h5>
                             <div class="row">
                                 <div class="form-group col-md-12">
-                                    <label for="snapApartColorField">Snap Apart Color:</label>
+                                    <label for="snapApartColorField">Color:</label>
                                     <select id="snapApartColorField" name="snapApartColorField" class="form-control">
                                         <option value="false">Black & White</option>
-                                        <option value="true">Full Color</option>
+                                        <option value="true">Color</option>
                                     </select>
                                 </div>
                             </div>
@@ -231,7 +232,7 @@
                             <h5>Addressing Options</h5>
                             <div class="row">
                                 <div class="form-group col-md-6">
-                                    <label for="snapApartFontField">Snap Apart Font:</label>
+                                    <label for="snapApartFontField">Font:</label>
                                     <select id="snapApartFontField" name="snapApartFontField" class="form-control">
                                         </select>
                                 </div>
@@ -613,6 +614,8 @@
                 }
                 if (payload['arguments'] && payload['arguments'].execute && payload['arguments'].execute.inArguments) {
                     const inArgs = payload['arguments'].execute.inArguments[0] || {};
+
+                    console.log('inArgs', inArgs);
                     dataExtensionKey = inArgs.dataExtension || dataExtensionKey;
                     fieldMappings.first_name = inArgs.first_name_field || '';
                     fieldMappings.last_name = inArgs.last_name_field || '';
@@ -1098,7 +1101,7 @@
 
                 // If we've reached this point, it means there are design fields to render.
                 // So, we should add the title. Since we removed any existing one, we can just add it.
-                $container.before('<h5 id="dynamicDesignFieldsContainerTitle" class=" mb-2">Map Design Fields</h5>');
+                $container.before('<h5 id="dynamicDesignFieldsContainerTitle" class=" mb-2">Variable mapping</h5>');
 
 
 
