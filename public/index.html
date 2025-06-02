@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     
-    <!-- APP_URL -->
     <style>
         /* Existing styles */
     #designPreviewModal {
@@ -82,78 +81,85 @@
         max-height: 100%; /* Ensure images fit within the carousel */
         object-fit: contain; /* Preserve aspect ratio and fit */
     }
+    .invalid-feedback { /* Ensure invalid feedback is visible */
+        display: none; /* Initially hidden by Bootstrap, shown by JS or Bootstrap's validation */
+        width: 100%;
+        margin-top: .25rem;
+        font-size: .875em;
+        color: #dc3545;
+    }
+    select.is-invalid, input.is-invalid {
+        border-color: #dc3545;
+    }
     </style>
 </head>
 <body>
     <div class="row" ><img src="images/pcmlogo.png" /> </div>
-    <div id="error" style="color: red; display: none;"></div>
+    <div id="error" class="alert alert-danger" style="display: none;"></div>
     <div class="container mt-4" id="configPanel">
-         
+        
         <p>Map fields from the entry source Data Extension to process.</p>
-        <form id="configForm" class="row" >
+        <form id="configForm" class="row" novalidate>
             <div class="col-md-6 order-md-1 border-end" style="border-right:3px solid #f5f5f5">
                     <h5 class="mb-3">Recipient address</h5>
-                    <!--div class="form-group">
-                        <label>Data Extension Key:</label>
-                        <input type="text" class="form-control" id="dataExtensionKey" readonly>
-                    </div-->
                     <div class="row">
-                        <div class="form-group col-md-6 mb-3  ">
+                        <div class="form-group col-md-6 mb-3">
                             <label for="firstNameField">First Name:</label>
-                            <select class="form-control  " id="firstNameField" name="firstNameField">
+                            <select class="form-control" id="firstNameField" name="firstNameField" required>
                                 <option value="">-- Select Mapping --</option>
                             </select>
+                            <div class="invalid-feedback">First Name mapping is required.</div>
                         </div>
                     
-                        <div class="form-group col-md-6 mb-3  ">
+                        <div class="form-group col-md-6 mb-3">
                             <label for="lastNameField">Last Name:</label>
-                            <select class="form-control  " id="lastNameField" name="lastNameField">
+                            <select class="form-control" id="lastNameField" name="lastNameField" required>
                                 <option value="">-- Select Mapping --</option>
                             </select>
+                            <div class="invalid-feedback">Last Name mapping is required.</div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-md-6 mb-3  ">
+                        <div class="form-group col-md-6 mb-3">
                             <label for="streetField">Street:</label>
-                            <select class="form-control  " id="streetField" name="streetField">
+                            <select class="form-control" id="streetField" name="streetField" required>
                                 <option value="">-- Select Mapping --</option>
                             </select>
+                            <div class="invalid-feedback">Street mapping is required.</div>
                         </div>
                     
-                        <div class="form-group col-md-6 mb-3  ">
+                        <div class="form-group col-md-6 mb-3">
                             <label for="cityField">City:</label>
-                            <select class="form-control  " id="cityField" name="cityField">
+                            <select class="form-control" id="cityField" name="cityField" required>
                                 <option value="">-- Select Mapping --</option>
                             </select>
+                            <div class="invalid-feedback">City mapping is required.</div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-md-6 mb-3  ">
+                        <div class="form-group col-md-6 mb-3">
                             <label for="stateField">State Field:</label>
-                            <select class="form-control  " id="stateField" name="stateField">
+                            <select class="form-control" id="stateField" name="stateField" required>
                                 <option value="">-- Select a Field --</option>
                             </select>
+                            <div class="invalid-feedback">State mapping is required.</div>
                         </div>
                     
-                        <div class="form-group col-md-6 mb-3  ">
+                        <div class="form-group col-md-6 mb-3">
                             <label for="postalCodeField">Postal/Zip Code:</label>
-                            <select class="form-control  " id="postalCodeField" name="postalCodeField">
+                            <select class="form-control" id="postalCodeField" name="postalCodeField" required>
                                 <option value="">-- Select a Field --</option>
                             </select>
+                            <div class="invalid-feedback">Postal/Zip Code mapping is required.</div>
                         </div>
                     </div>
-                    <!--div class="form-group">
-                        <label for="countryField">Country Field:</label>
-                        <select class="form-control" id="countryField" name="countryField">
-                            <option value="">-- Select a Field --</option>
-                        </select>
-                    </div-->
                     <div class="row">
-                        <div class="form-group  col-md-12 mb-3 ">
+                        <div class="form-group col-md-12 mb-3">
                             <label for="designIdSelect">Select Design:</label>
-                            <select class="form-control " id="designIdSelect" name="designId">
+                            <select class="form-control" id="designIdSelect" name="designId" required>
                                 <option value="">-- Select a Design --</option>
                             </select>
+                            <div class="invalid-feedback">Design selection is required.</div>
                         </div>
                     </div>
                     <div class="row">
@@ -167,24 +173,27 @@
                         <div class="row">
                             <div class="form-group col-md-6">
                                 <label for="letterColorField">Color:</label>
-                                <select id="letterColorField" name="letterColorField" class="form-control">
+                                <select id="letterColorField" name="letterColorField" class="form-control" required>
                                     <option value="false">Black & White</option>
                                     <option value="true">Full Color</option>
                                 </select>
+                                <div class="invalid-feedback">Letter Color selection is required.</div>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="letterPrintBothSidesField">Print on Both Sides:</label>
-                                <select id="letterPrintBothSidesField" name="letterPrintBothSidesField" class="form-control">
+                                <select id="letterPrintBothSidesField" name="letterPrintBothSidesField" class="form-control" required>
                                     <option value="false">No</option>
                                     <option value="true">Yes</option>
                                 </select>
+                                <div class="invalid-feedback">Print on Both Sides selection is required.</div>
                             </div>
                             <div class="form-group col-md-12">
                                 <label for="letterInsertAddressPageField">Insert Addressing Page:</label>
-                                <select id="letterInsertAddressPageField" name="letterInsertAddressPageField" class="form-control">
+                                <select id="letterInsertAddressPageField" name="letterInsertAddressPageField" class="form-control" required>
                                     <option value="false">No</option>
                                     <option value="true">Yes</option>
                                 </select>
+                                <div class="invalid-feedback">Insert Addressing Page selection is required.</div>
                             </div>
                         </div>
                     </div>
@@ -196,18 +205,21 @@
                             <div class="row">
                                 <div class="form-group col-md-6">
                                     <label for="envelopeTypeField">Type:</label>
-                                    <select id="envelopeTypeField" name="envelopeTypeField" class="form-control">
-                                        </select>
+                                    <select id="envelopeTypeField" name="envelopeTypeField" class="form-control" required>
+                                    </select>
+                                    <div class="invalid-feedback">Envelope Type is required.</div>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="envelopeFontField">Font:</label>
-                                    <select id="envelopeFontField" name="envelopeFontField" class="form-control">
-                                        </select>
+                                    <select id="envelopeFontField" name="envelopeFontField" class="form-control" required>
+                                    </select>
+                                    <div class="invalid-feedback">Envelope Font is required.</div>
                                 </div>
                                 <div class="form-group col-md-12">
                                     <label for="envelopeFontColorField">Font Color:</label>
-                                    <select id="envelopeFontColorField" name="envelopeFontColorField" class="form-control">
-                                        </select>
+                                    <select id="envelopeFontColorField" name="envelopeFontColorField" class="form-control" required>
+                                    </select>
+                                    <div class="invalid-feedback">Envelope Font Color is required.</div>
                                 </div>
                             </div>
                         </div>
@@ -218,10 +230,11 @@
                             <div class="row">
                                 <div class="form-group col-md-12">
                                     <label for="snapApartColorField">Color:</label>
-                                    <select id="snapApartColorField" name="snapApartColorField" class="form-control">
+                                    <select id="snapApartColorField" name="snapApartColorField" class="form-control" required>
                                         <option value="false">Black & White</option>
                                         <option value="true">Color</option>
                                     </select>
+                                    <div class="invalid-feedback">Snap Apart Color selection is required.</div>
                                 </div>
                             </div>
                         </div>
@@ -233,13 +246,15 @@
                             <div class="row">
                                 <div class="form-group col-md-6">
                                     <label for="snapApartFontField">Font:</label>
-                                    <select id="snapApartFontField" name="snapApartFontField" class="form-control">
-                                        </select>
+                                    <select id="snapApartFontField" name="snapApartFontField" class="form-control" required>
+                                    </select>
+                                    <div class="invalid-feedback">Snap Apart Font is required.</div>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="snapApartFontColorField">Font Color:</label>
-                                    <select id="snapApartFontColorField" name="snapApartFontColorField" class="form-control">
-                                        </select>
+                                    <select id="snapApartFontColorField" name="snapApartFontColorField" class="form-control" required>
+                                    </select>
+                                    <div class="invalid-feedback">Snap Apart Font Color is required.</div>
                                 </div>
                             </div>
                         </div>
@@ -248,44 +263,47 @@
                         
                     </div>
                     
-                    <!--button type="button" class="btn btn-primary" id="saveButton">Save</button-->
-                
-            </div>
+                    </div>
         
             <div class="col-md-6 order-md-2 mb-4">
                 <h5 class="mb-3">Return address</h5>
-                 
+                
                 <div class="row">
                     <div class="form-group col-md-6 mb-3">
                         <label for="rfirstNameField">First Name:</label>
                         <input type="text" class="form-control" id="rfirstNameField" name="rfirstNameField" placeholder="First Name" required>
-                        
+                        <div class="invalid-feedback">First Name is required.</div>
                     </div>
                 
                     <div class="form-group col-md-6 mb-3">
                         <label for="rlastNameField">Last Name:</label>
                         <input type="text" class="form-control" id="rlastNameField" name="rlastNameField" placeholder="Last Name" required>
+                        <div class="invalid-feedback">Last Name is required.</div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group col-md-6 mb-3">
                         <label for="rstreetField">Street:</label>
                         <input type="text" class="form-control" id="rstreetField" name="rstreetField" placeholder="Street Name" required>
+                        <div class="invalid-feedback">Street is required.</div>
                     </div>
                 
                     <div class="form-group col-md-6 mb-3">
                         <label for="rcityField">City:</label>
                         <input type="text" class="form-control" id="rcityField" name="rcityField" placeholder="City" required>
+                        <div class="invalid-feedback">City is required.</div>
                     </div>
                 
                     <div class="form-group col-md-6 mb-3">
                         <label for="rstateField">State:</label>
                         <input type="text" class="form-control" id="rstateField" name="rstateField" placeholder="State" required>
+                        <div class="invalid-feedback">State is required.</div>
                     </div>
 
                     <div class="form-group col-md-6 mb-3">
                         <label for="rpostalCodeField">Postal Code:</label>
                         <input type="text" class="form-control" id="rpostalCodeField" name="rpostalCodeField" placeholder="Postal/Zip Code" required>
+                        <div class="invalid-feedback">Postal Code is required.</div>
                     </div>
                 </div>
 
@@ -299,16 +317,16 @@
         <form id="regForm">
             <div class="form-group">
                 <label for="apiKey">API Key:</label>
-                <input type="text" class="form-control" id="apiKey" name="apiKey" placeholder="Enter API Key">
-            </div>
+                <input type="text" class="form-control" id="apiKey" name="apiKey" placeholder="Enter API Key" required>
+                 <div class="invalid-feedback">API Key is required.</div> </div>
             <div class="form-group">
                 <label for="apiSecret">API Secret:</label>
-                <input type="text" class="form-control" id="apiSecret" name="apiSecret" placeholder="Enter API Secret">
-                </div>
+                <input type="text" class="form-control" id="apiSecret" name="apiSecret" placeholder="Enter API Secret" required>
+                <div class="invalid-feedback">API Secret is required.</div> </div>
             <div class="form-group">
                 <label for="jwtSecret">JWT Secret:</label>
-                <input type="text" class="form-control" id="jwtSecret" name="jwtSecret" placeholder="Enter JWT Secret from PCM under Setup>Apps>Installed Packages">
-                </div>
+                <input type="text" class="form-control" id="jwtSecret" name="jwtSecret" placeholder="Enter JWT Secret from PCM under Setup>Apps>Installed Packages" required>
+                <div class="invalid-feedback">JWT Secret is required.</div> </div>
             
             <button type="button" class="btn btn-primary"  onclick="handleRegistration()">Register</button>
         </form>
@@ -392,6 +410,7 @@
             // Clear previous status messages and styling
             registrationStatusDiv.textContent = '';
             registrationStatusDiv.className = ''; // Clears any 'text-danger' or 'text-success' etc.
+            $('#regForm .is-invalid').removeClass('is-invalid'); // Clear previous Bootstrap errors
         
             // 1. Get values from the form inputs
             const apiKeyInput = document.getElementById('apiKey');
@@ -406,23 +425,23 @@
             let validationErrors = [];
             if (!apiKey) {
                 validationErrors.push("API Key is required.");
-                // You could add a class to highlight the input field, e.g., apiKeyInput.classList.add('is-invalid');
+                apiKeyInput.classList.add('is-invalid');
             } else {
-                // apiKeyInput.classList.remove('is-invalid'); // Example for removing error state
+                 apiKeyInput.classList.remove('is-invalid');
             }
         
             if (!apiSecret) {
                 validationErrors.push("API Secret is required.");
-                // apiSecretInput.classList.add('is-invalid');
+                apiSecretInput.classList.add('is-invalid');
             } else {
-                // apiSecretInput.classList.remove('is-invalid');
+                apiSecretInput.classList.remove('is-invalid');
             }
         
             if (!jwtSecretFromForm) { // Validating the JWT Secret from the form input
-                validationErrors.push("JWT Secret (from form) is required.");
-                // jwtSecretInput.classList.add('is-invalid');
+                validationErrors.push("JWT Secret is required.");
+                 jwtSecretInput.classList.add('is-invalid');
             } else {
-                // jwtSecretInput.classList.remove('is-invalid');
+                jwtSecretInput.classList.remove('is-invalid');
             }
         
             if (validationErrors.length > 0) {
@@ -520,7 +539,7 @@
         function showPreview(){
             
             const selectedDesignId = $('#designIdSelect').val();
-                
+                    
             showDesignPreviewModal(parseInt(selectedDesignId));
         }
 
@@ -617,13 +636,13 @@
 
                     console.log('inArgs', inArgs);
                     dataExtensionKey = inArgs.dataExtension || dataExtensionKey;
-                    fieldMappings.first_name = inArgs.first_name_field || '';
-                    fieldMappings.last_name = inArgs.last_name_field || '';
+                    fieldMappings.firstName = inArgs.first_name_field || ''; // Corrected: use mapping name not value
+                    fieldMappings.lastName = inArgs.last_name_field || '';
                     fieldMappings.street = inArgs.street_field || '';
                     fieldMappings.city = inArgs.city_field || '';
                     fieldMappings.state = inArgs.state_field || '';
-                    fieldMappings.postal_code = inArgs.postal_code_field || '';
-                    fieldMappings.country = inArgs.country_field || '';
+                    fieldMappings.postalCode = inArgs.postal_code_field || '';
+                    // fieldMappings.country = inArgs.country_field || ''; // If used
 
                     fieldMappings.designId = inArgs.selectedDesignId || '';
 
@@ -633,57 +652,65 @@
                     fieldMappings.rstreet = inArgs.rstreet || '';
                     fieldMappings.rcity = inArgs.rcity || '';
                     fieldMappings.rstate = inArgs.rstate || '';
-                    fieldMappings.rpostalCode = inArgs.rpostal_code || ''; // Corrected key
+                    fieldMappings.rpostalCode = inArgs.rpostal_code || ''; 
 
                     // Load Letter/Envelope options
-                    // Use String() for boolean-like fields to match select values 'true'/'false'
-                    fieldMappings.letterColor = inArgs.letterColor !== undefined ? String(inArgs.letterColor) : 'false';
-                    fieldMappings.letterPrintBothSides = inArgs.letterPrintBothSides !== undefined ? String(inArgs.letterPrintBothSides) : 'false';
-                    fieldMappings.letterInsertAddressPage = inArgs.letterInsertAddressPage !== undefined ? String(inArgs.letterInsertAddressPage) : 'false';
-                    fieldMappings.envelopeType = inArgs.envelopeType || '';
-                    fieldMappings.envelopeFont = inArgs.envelopeFont || '';
-                    fieldMappings.envelopeFontColor = inArgs.envelopeFontColor || '';
+                    if (inArgs.letter_options) {
+                        try {
+                            const letterOpts = JSON.parse(inArgs.letter_options);
+                            fieldMappings.letterColor = letterOpts.letterColor !== undefined ? String(letterOpts.letterColor) : 'false';
+                            fieldMappings.letterPrintBothSides = letterOpts.letterPrintBothSides !== undefined ? String(letterOpts.letterPrintBothSides) : 'false';
+                            fieldMappings.letterInsertAddressPage = letterOpts.letterInsertAddressPage !== undefined ? String(letterOpts.letterInsertAddressPage) : 'false';
+                            fieldMappings.envelopeType = letterOpts.envelopeType || '';
+                            fieldMappings.envelopeFont = letterOpts.envelopeFont || '';
+                            fieldMappings.envelopeFontColor = letterOpts.envelopeFontColor || '';
+                        } catch (e) { console.error("Error parsing letter_options", e); }
+                    }
+
 
                     // Load Snap Apart options
-                    fieldMappings.snapApartColor = inArgs.snapApartColor !== undefined ? String(inArgs.snapApartColor) : 'false';
-                    fieldMappings.snapApartFont = inArgs.snapApartFont || '';
-                    fieldMappings.snapApartFontColor = inArgs.snapApartFontColor || '';
-                    
-
-                    // Load dynamic field mappings by iterating keys
-                    fieldMappings.dynamicFields = {}; // Initialize
-                    for (const key in inArgs) {
-                        if (inArgs.hasOwnProperty(key) && key.startsWith('df_') && key.endsWith('_mappedTo')) {
-                            const designFieldKey = key.substring(3, key.length - '_mappedTo'.length);
-                            if (inArgs[key]) { // Ensure there's a value
-                                fieldMappings.dynamicFields[designFieldKey] = inArgs[key];
-                            }
-                        }
+                     if (inArgs.snapapart_options) {
+                        try {
+                            const snapOpts = JSON.parse(inArgs.snapapart_options);
+                            fieldMappings.snapApartColor = snapOpts.snapApartColor !== undefined ? String(snapOpts.snapApartColor) : 'false';
+                            fieldMappings.snapApartFont = snapOpts.snapApartFont || '';
+                            fieldMappings.snapApartFontColor = snapOpts.snapApartFontColor || '';
+                        } catch (e) { console.error("Error parsing snapapart_options", e); }
                     }
+                    
+                    // Load dynamic field mappings
+                    fieldMappings.dynamicFields = {}; // Initialize
+                    if (inArgs.dynamic_fields) {
+                        try {
+                            const dynamicFieldsFromPayload = JSON.parse(inArgs.dynamic_fields);
+                            for (const key in dynamicFieldsFromPayload) {
+                                if (dynamicFieldsFromPayload.hasOwnProperty(key) && key.startsWith('df_') && key.endsWith('_mappedTo')) {
+                                    const designFieldKey = key.substring(3, key.length - '_mappedTo'.length);
+                                    fieldMappings.dynamicFields[designFieldKey] = dynamicFieldsFromPayload[key];
+                                }
+                            }
+                        } catch (e) { console.error("Error parsing dynamic_fields", e); }
+                    }
+
 
                     console.log('Loaded saved field mappings:', fieldMappings);
                     console.log('Loaded saved DE key:', dataExtensionKey);
-                    $('#dataExtensionKey').val(dataExtensionKey);
-                    updateFieldSelections();
-                    //fetchDesigns(); // Call function to fetch designs
-                    
+                    $('#dataExtensionKey').val(dataExtensionKey); // This input is commented out in HTML
+                    updateFieldSelections(); 
                 }
             });
 
             connection.on('requestedTokens', function(data) {
                 console.log('requestedTokens received:', JSON.stringify(data));
                 tokens = data;
-                if (tokens ) {
-                    sfmcMID =   tokens.MID; //'5460112345';//tokens.MID; // Store the token
-            
-                    // Check if endpoints are already available
-                    if (sfmcMID) {
-                        runWhenReady(); // Call your function
+                if (tokens && tokens.MID ) { // Ensure MID exists
+                    sfmcMID = tokens.MID; 
+                    if (sfmcRestHost) { // Check if endpoints are already available
+                        runWhenReady(); 
                     }
                 } else {
-                    console.error('Invalid or missing token in requestedTokens data:', tokens);
-                    // Handle error appropriately, maybe show UI message
-                    $('#error').text('Error: Failed to receive valid authentication token.').show();
+                    console.error('Invalid or missing MID in requestedTokens data:', tokens);
+                    $('#error').text('Error: Failed to receive valid authentication token (MID).').show();
                 }
             });
 
@@ -691,32 +718,25 @@
                 console.log('requestedEndpoints received:', JSON.stringify(data));
                 endpoints = data;
                 if (endpoints && endpoints.fuelapiRestHost) {
-                    sfmcRestHost = endpoints.fuelapiRestHost; // Store the REST endpoint
-            
+                    sfmcRestHost = endpoints.fuelapiRestHost; 
+                     if (sfmcMID) { // Check if token (MID) is already available
+                        runWhenReady(); 
+                    }
                 } else {
                     console.error('Invalid or missing fuelapiRestHost in requestedEndpoints data:', endpoints);
-                     // Handle error appropriately, maybe show UI message
                     $('#error').text('Error: Failed to receive valid API endpoint information.').show();
                 }
-                
-                
             });
 
 
-            // 1. Define variables in a scope accessible by both listeners
-             // Flag to prevent running your function multiple times
-
-            // 2. Define the function you want to call when both are ready
-            //    (This function will contain the logic that needs both token and endpoint)
             function runWhenReady() {
-                // Ensure this runs only once
                 if (initialDataLoaded) {
                     return;
                 }
-                initialDataLoaded = true; // Set the flag
+                initialDataLoaded = true; 
 
-                console.log("Tokens and Endpoints are both available!");
-                console.log("Using MID:", !!sfmcMID); // Log true/false if token exists
+                console.log("Tokens (MID) and Endpoints are both available!");
+                console.log("Using MID:", !!sfmcMID); 
                 
                 try{
                     verifyAuth();
@@ -726,28 +746,23 @@
             }
 
 
-            // In index.html, inside loadDataExtensions or similar
-
             async function verifyAuth() {
                 if (!sfmcMID) {
                     console.error('Cannot verify authentication: MID missing.');
-                    // Ensure error div is visible and set text
                     $('#error').text('Verification failed: MID is missing.').show();
-                    $('#deLoadStatus').hide(); // Hide loading status if it was visible
+                    $('#deLoadStatus').hide(); 
                     return;
                 }
             
-                // Hide previous errors and set initial loading status
                 $('#error').hide();
-                $('#deLoadStatus').text('Verifying authentication...').show();
-                console.log('Calling /api/verify...'); // Corrected console log message
+                $('#deLoadStatus').text('Verifying authentication...').show(); // Assuming #deLoadStatus exists
+                console.log('Calling /api/verify...'); 
             
                 try {
-                    const response = await fetch(`${window.APP_URL}/api/verify`, { // New endpoint name
+                    const response = await fetch(`${window.APP_URL}/api/verify`, { 
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            // Add any CSRF or session headers if your backend requires them
                         },
                         body: JSON.stringify({
                             mid: sfmcMID
@@ -757,17 +772,12 @@
                     if (!response.ok) {
                         let errorDetails = `HTTP error! Status: ${response.status}`;
                         try {
-                            // Attempt to parse the error response body for more details
-                            const errorBody = await response.json(); // Or response.text() if it might not be JSON
+                            const errorBody = await response.json(); 
                             errorDetails += ` - Message: ${JSON.stringify(errorBody.message || errorBody)}`;
                         } catch (e) {
-                            // If parsing the error body fails, we'll stick with the status code
                             console.warn('Could not parse error response body:', e);
-                            // You could also try response.text() here as a fallback if JSON parsing fails
-                            // const errorText = await response.text();
-                            // errorDetails += ` - Response: ${errorText}`;
                         }
-                        throw new Error(errorDetails); // This error will be caught by the catch block below
+                        throw new Error(errorDetails); 
                     }
             
                     const result = await response.json();
@@ -775,25 +785,14 @@
                     if (result.success && result.existingUser) {
                         console.log("Verification successful. User exists. Token:", result.token);
                         $('#deLoadStatus').text('User verified. Loading designs...').show();
-            
-                        // Assuming fetchDesigns is also an async function.
-                        // Awaiting it makes its errors catchable by this try...catch block
-                        // and ensures verifyAuth waits for fetchDesigns to complete if needed.
                         await fetchDesigns(result.token);
                         $('#configPanel').show();
-                        
-                        // If fetchDesigns doesn't handle its own success UI for #deLoadStatus, you might do it here:
-                        // e.g., $('#deLoadStatus').text('Designs loaded successfully.').show();
-                        // or $('#deLoadStatus').hide(); if no further status is needed.
+                        // $('#deLoadStatus').hide(); // Or update as needed
                     } else if (result.success && !result.existingUser) {
                         console.log("Verification successful. User not found/new user.");
-
-                        $('#deLoadStatus').text('User not found. Please follow on-screen instructions.').show();
+                        $('#deLoadStatus').text('User not found. Please complete registration.').show();
                         $('#regPanel').show();
-                        // TODO: Implement UI prompt logic for API key, secret for new user registration.
-                        // For example: showNewUserRegistrationForm();
                     } else {
-                        // Handle cases where result.success is false or other unexpected structures from the backend
                         const errorMessage = result.message || 'Unknown verification error';
                         const errorCode = result.errorCode ? ` (Code: ${result.errorCode})` : '';
                         console.error("Verification failed on backend:", errorMessage, errorCode);
@@ -801,41 +800,145 @@
                         $('#deLoadStatus').text('Verification attempt failed.').show();
                     }
                 } catch (error) {
-                    // This block now catches errors from:
-                    // - The fetch() call itself (network errors, etc.)
-                    // - The `throw new Error(...)` for non-ok HTTP responses
-                    // - `response.json()` if parsing fails
-                    // - `await fetchDesigns(result.token)` if it throws an error
                     console.error('Error during verification process:', error);
-                    $('#deLoadStatus').text('An error occurred.').show();
-                    // Display a user-friendly error message. error.message should contain the details.
-                    $('#error').text(`Error: ${error.message || 'The process failed. Please try again later.'}`).show();
+                    $('#deLoadStatus').text('An error occurred during verification.').show();
+                    $('#error').text(`Error: ${error.message || 'The verification process failed. Please try again later.'}`).show();
                 }
             }
 
-
-            
-
-
-            
 
             connection.on('requestedSchema', function(data) {
                 console.log('requestedSchema received:', JSON.stringify(data));
                 schema = data.schema || [];
                 if (schema.length > 0) {
                     const firstKey = schema[0].key;
-                    dataExtensionKey = firstKey.split('.')[1];
+                    // Example: "Event.APIEvent-01234567-abcd-1234-efgh-c1c1c1c1c1c1.ContactKey"
+                    // We want "APIEvent-01234567-abcd-1234-efgh-c1c1c1c1c1c1"
+                    const keyParts = firstKey.split('.');
+                    if (keyParts.length > 1) {
+                        dataExtensionKey = keyParts[1]; // This should be the DE Key
+                    } else {
+                         dataExtensionKey = firstKey; // Fallback, though less likely for DE schema
+                    }
+
                     console.log('Extracted Data Extension key from schema:', dataExtensionKey);
-                    $('#dataExtensionKey').val(dataExtensionKey);
+                    //$('#dataExtensionKey').val(dataExtensionKey); // This input is commented
                     populateFieldDropdowns();
                 } else {
-                    console.error('No schema data received');
+                    console.error('No schema data received or schema is empty');
                     $('#error').text('Error: No schema data received from Journey Builder.').show();
                 }
             });
 
+
+            function validateConfigForm() {
+                let isValid = true;
+                const errorMessages = [];
+                $('#configForm .is-invalid').removeClass('is-invalid');
+                $('#configForm .invalid-feedback').hide().text(''); // Hide and clear text of all feedback divs in the form
+                $('#error').hide();
+
+
+                function validateSingleField(fieldId, errorMessage) {
+                    const $field = $(`#${fieldId}`);
+                    if (!$field.length || !$field.is(':visible')) { // Check if field exists and is visible
+                         // If field doesn't exist or isn't visible, skip validation for it unless it's a critical base field
+                        if ($field.prop('required') && !$field.is(':visible')) {
+                            // This case might need special handling if a required field can be hidden
+                            // For now, we assume visible required fields are the primary concern
+                        }
+                        return true;
+                    }
+
+                    let value = $field.val();
+                    if (value === null || String(value).trim() === "") {
+                        $field.addClass('is-invalid');
+                        // Ensure the specific feedback div for this field is shown and has the message
+                        let $feedback = $field.next('.invalid-feedback');
+                        if (!$feedback.length) { // If no sibling, maybe it's in a parent or needs specific structure
+                            $feedback = $field.closest('.form-group').find('.invalid-feedback');
+                        }
+
+                        if ($feedback.length) {
+                           $feedback.text(errorMessage).show();
+                        } else {
+                             // Fallback if no specific div, though it's better to have one per field
+                             console.warn("No invalid-feedback div found for " + fieldId);
+                        }
+                        errorMessages.push(errorMessage);
+                        return false;
+                    }
+                    return true;
+                }
+
+                // Recipient Address
+                if (!validateSingleField('firstNameField', 'First Name mapping is required.')) isValid = false;
+                if (!validateSingleField('lastNameField', 'Last Name mapping is required.')) isValid = false;
+                if (!validateSingleField('streetField', 'Street mapping is required.')) isValid = false;
+                if (!validateSingleField('cityField', 'City mapping is required.')) isValid = false;
+                if (!validateSingleField('stateField', 'State mapping is required.')) isValid = false;
+                if (!validateSingleField('postalCodeField', 'Postal/Zip Code mapping is required.')) isValid = false;
+                if (!validateSingleField('designIdSelect', 'Design selection is required.')) isValid = false;
+
+                // Return Address
+                if (!validateSingleField('rfirstNameField', 'First Name is required.')) isValid = false;
+                if (!validateSingleField('rlastNameField', 'Last Name is required.')) isValid = false;
+                if (!validateSingleField('rstreetField', 'Street is required.')) isValid = false;
+                if (!validateSingleField('rcityField', 'City is required.')) isValid = false;
+                if (!validateSingleField('rstateField', 'State is required.')) isValid = false;
+                if (!validateSingleField('rpostalCodeField', 'Postal Code is required.')) isValid = false;
+
+                const selectedDesignId = $('#designIdSelect').val();
+                if (selectedDesignId) {
+                    const selectedDesignObject = designsData.find(d => d.designID === parseInt(selectedDesignId));
+                    if (selectedDesignObject) {
+                        if (selectedDesignObject.productType === 'letter') {
+                            if ($('#envelopeOptionsContainer').is(':visible')) { // Only validate if visible
+                                if (!validateSingleField('envelopeTypeField', 'Envelope Type is required.')) isValid = false;
+                                if (!validateSingleField('envelopeFontField', 'Envelope Font is required.')) isValid = false;
+                                if (!validateSingleField('envelopeFontColorField', 'Envelope Font Color is required.')) isValid = false;
+                            }
+                             // Note: letterColorField, letterPrintBothSidesField, letterInsertAddressPageField have defaults and don't have a "select" option
+                        } else if (selectedDesignObject.productType === 'snapapart') {
+                            if ($('#snapApartAddressingOptionsContainer').is(':visible')) { // Only validate if visible
+                                if (!validateSingleField('snapApartFontField', 'Snap Apart Font is required.')) isValid = false;
+                                if (!validateSingleField('snapApartFontColorField', 'Snap Apart Font Color is required.')) isValid = false;
+                            }
+                            // Note: snapApartColorField has defaults
+                        }
+
+                        // Dynamic Design Fields
+                        if ($('#dynamicDesignFieldsContainer').is(':visible') && selectedDesignObject.designFields && selectedDesignObject.designFields.length > 0) {
+                            selectedDesignObject.designFields.forEach(df => {
+                                if (df.mandatory) {
+                                    const selectId = `dynamicField_${df.fieldKey}_select`;
+                                    if (!validateSingleField(selectId, `${df.fieldLabel || df.fieldKey} mapping is required.`)) isValid = false;
+                                }
+                            });
+                        }
+                    }
+                }
+
+                if (!isValid) {
+                    $('#error').html('Please correct the highlighted errors:<br>' + errorMessages.join('<br>')).show();
+                } else {
+                    $('#error').hide();
+                }
+                return isValid;
+            }
+
+
             connection.on('requestedSave', function() {
                 console.log('requestedSave called');
+                if (!validateConfigForm()) {
+                    console.log('Form validation failed on save.');
+                    // Postmonger doesn't have a specific "saveFailedValidation" trigger.
+                    // SFMC will likely show a generic error or just not save.
+                    // To inform SFMC about validation state for save, you might need to rely on validationFinished.
+                    // However, requestedSave is usually about persisting the current state.
+                    // We prevent updateActivity if invalid.
+                    return;
+                }
                 updatePayload();
                 console.log('Triggering updateActivity after save request');
                 connection.trigger('updateActivity', payload);
@@ -843,24 +946,27 @@
 
             connection.on('requestedValidate', function() {
                 console.log('requestedValidate called');
-                if (!fieldMappings.first_name) {
-                    console.log('Validation failed: First Name field is required');
-                    connection.trigger('validationFinished', false);
+                if (!validateConfigForm()) {
+                    console.log('Validation failed for requestedValidate.');
+                    connection.trigger('validationFinished', false); // Inform SFMC validation failed
                     return;
                 }
-                updatePayload();
-                console.log('Triggering updateActivity before validation');
-                connection.trigger('updateActivity', payload);
-                console.log('Triggering validationFinished');
-                connection.trigger('validationFinished', true);
+                // If validation passes, update payload and then proceed
+                updatePayload(); 
+                console.log('Triggering updateActivity before validationFinished (true)');
+                connection.trigger('updateActivity', payload); 
+                console.log('Triggering validationFinished (true)');
+                connection.trigger('validationFinished', true); // Inform SFMC validation passed
             });
 
             connection.on('clickedNext', function() {
-                console.log('clickedNext called');
-                if (!fieldMappings.first_name) {
-                    console.log('Validation failed on Next: First Name field is required');
-                    $('#error').text('Please map at least the First Name field.').show();
-                    return;
+                console.log('clickedNext called (Done button)');
+                if (!validateConfigForm()) {
+                    console.log('Validation failed on Next/Done.');
+                    // Error message is already handled by validateConfigForm
+                    // SFMC will prevent advancing if there's an error state often tied to validationFinished(false)
+                    // or if the activity doesn't update its state correctly.
+                    return; 
                 }
                 updatePayload();
                 console.log('Triggering updateActivity before done');
@@ -868,6 +974,7 @@
                 console.log('Triggering done');
                 connection.trigger('done');
             });
+
 
             connection.on('updateActivity', function(data) {
                 console.log('updateActivity triggered with data:', JSON.stringify(data));
@@ -883,7 +990,7 @@
 
             connection.on('error', function(error) {
                 console.error('Postmonger error:', error);
-                $('#error').text('Postmonger error: ' + error).show();
+                $('#error').text('Postmonger error: ' + JSON.stringify(error)).show();
             });
 
             
@@ -891,11 +998,10 @@
             async function fetchDesigns(authToken) {
                 $('#previewPanel').hide();
                 console.log('Fetching designs from backend (/getDesigns)');
-                    await fetch(`${window.APP_URL}/getDesigns`,{ // New endpoint name
+                    await fetch(`${window.APP_URL}/getDesigns`,{ 
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            // Add any CSRF or session headers if your backend requires them
                         },
                         body: JSON.stringify({
                             token: authToken 
@@ -911,17 +1017,21 @@
                         console.log('Designs data received from backend:', JSON.stringify(data));
                         designsData = data.results || []; // Store the designs data
                         const $designSelect = $('#designIdSelect');
+                        // Clear previous options except the first one
+                        $designSelect.find('option:not(:first)').remove();
                         designsData.forEach(design => {
                             $designSelect.append(`<option value="${design.designID}">${design.designID} - ${design.productType} - ${design.friendlyName}</option>`);
                         });
                         $('#error').hide();
-                        /*if (selectedDesignId) {
-                            $designSelect.val(selectedDesignId);
-                            showDesignPreview(selectedDesignId); // Show preview if a design is pre-selected
-                        }*/
+                        // If there was a previously selected design ID from initActivity, re-apply it
+                        if(fieldMappings.designId) {
+                            $designSelect.val(fieldMappings.designId);
+                            // Trigger change to re-render dynamic fields and product options based on loaded data
+                            $designSelect.trigger('change'); 
+                        }
                     })
                     .catch(error => {
-                                 console.error('Error fetching designs from backend:', error);
+                                console.error('Error fetching designs from backend:', error);
                         $('#error').text('Error: Failed to load designs. Please try again later.').show();
                     });
             }
@@ -929,16 +1039,18 @@
 
             $('#designIdSelect').on('change', function() {
                 const selectedDesignId = $(this).val();
+                fieldMappings.designId = selectedDesignId; // Update fieldMappings
                 
                 if(selectedDesignId!=undefined && selectedDesignId!='')$('#previewPanel').show();
                 else $('#previewPanel').hide();
-                //showDesignPreviewModal(parseInt(selectedDesignId));
-                fieldMappings.dynamicFields = {}; // Reset mappings when design changes
+                
+                fieldMappings.dynamicFields = {}; // Reset dynamic mappings when design changes
                 renderDynamicDesignFields(selectedDesignId);
 
-                 // Handle product-specific options
                 const selectedDesignObject = designsData.find(d => d.designID === parseInt(selectedDesignId));
                 renderProductSpecificOptions(selectedDesignObject);
+                 // After changing design, re-validate if you want immediate feedback or wait for next action
+                // validateConfigForm(); 
             });
 
             function showDesignPreviewModal(designId) {
@@ -946,11 +1058,15 @@
                 const $pdfViewerContainerModal = $('#pdfViewerContainerModal');
                 const $pdfViewerModal = $('#pdfViewerModal');
                 const $imageCarouselModal = $('#imageCarouselModal');
-    
-                $imageCarouselModal.empty().hide();
+        
+                // Destroy existing carousel instance if it exists
+                if ($imageCarouselModal.hasClass('owl-loaded')) {
+                    $imageCarouselModal.trigger('destroy.owl.carousel').removeClass('owl-loaded');
+                }
+                $imageCarouselModal.empty().hide(); // Clear items and hide
                 $pdfViewerContainerModal.hide();
                 modal.style.display = "block"; // Show the modal
-    
+        
                 if (selectedDesign) {
                     if (selectedDesign.productType === 'snapapart' || selectedDesign.productType === 'letter') {
                         if (selectedDesign.proofPDF) {
@@ -959,19 +1075,20 @@
                         }
                     } else if (selectedDesign.productType === 'postcard') {
                         if (selectedDesign.proofFront) {
-                            $('<img class="item" src="' + selectedDesign.proofFront + '">').appendTo($imageCarouselModal);
+                            $imageCarouselModal.append('<div class="item"><img src="' + selectedDesign.proofFront + '"></div>');
                         }
                         if (selectedDesign.proofBack) {
-                            $('<img class="item" src="' + selectedDesign.proofBack + '">').appendTo($imageCarouselModal);
+                             $imageCarouselModal.append('<div class="item"><img src="' + selectedDesign.proofBack + '"></div>');
                         }
                         if ($imageCarouselModal.children().length > 0) {
                             $imageCarouselModal.show();
                             if (typeof $imageCarouselModal.owlCarousel === 'function') {
                                 $imageCarouselModal.owlCarousel({
-                                    loop: false,
+                                    loop: $imageCarouselModal.children().length > 1, // Loop only if more than one item
                                     margin: 10,
                                     nav: true,
-                                    items: 1
+                                    items: 1,
+                                    dots: $imageCarouselModal.children().length > 1
                                 });
                             } else {
                                 console.error('Owl Carousel function not found. Ensure the script is loaded correctly.');
@@ -983,61 +1100,53 @@
 
 
             function populateFieldDropdowns() {
-
-                
-
                 console.log('Populating field dropdowns for schema:', JSON.stringify(schema));
                 dataExtensionSchemaFields = schema
-                    .filter(item => item.key.includes(dataExtensionKey))
+                    .filter(item => item.key.includes(`.${dataExtensionKey}.`)) // Ensure we are getting fields for the correct DE
                     .map(item => {
                         const fieldName = item.key.split('.').pop();
-                        return { name: fieldName, key: fieldName };
+                        return { name: fieldName, key: fieldName }; // key should be the actual field name from DE
                     });
 
-                console.log('Fields for DE:', JSON.stringify(dataExtensionSchemaFields));
+                console.log('Fields for DE "' + dataExtensionKey + '":', JSON.stringify(dataExtensionSchemaFields));
 
                 const fieldSelects = [
                     'firstNameField', 'lastNameField', 'streetField',
-                    'cityField', 'stateField', 'postalCodeField', 'countryField'
+                    'cityField', 'stateField', 'postalCodeField' // 'countryField' is commented out in HTML
                 ];
 
                 fieldSelects.forEach(selectId => {
                     const $select = $(`#${selectId}`);
-                    $select.empty().append('<option value="">-- Select Mapping --</option>');
+                    $select.find('option:not(:first)').remove(); // Clear previous options except the placeholder
                     dataExtensionSchemaFields.forEach(field => {
                         $select.append(`<option value="${field.key}">${field.name}</option>`);
                     });
                 });
 
-                fieldMappings.first_name = fieldMappings.first_name || (dataExtensionSchemaFields.some(f => f.key === 'first_name') ? 'first_name' : '');
-                fieldMappings.last_name = fieldMappings.last_name || (dataExtensionSchemaFields.some(f => f.key === 'last_name') ? 'last_name' : '');
-                fieldMappings.street = fieldMappings.street || (dataExtensionSchemaFields.some(f => f.key === 'street') ? 'street' : '');
-                fieldMappings.city = fieldMappings.city || (dataExtensionSchemaFields.some(f => f.key === 'city') ? 'city' : '');
-                fieldMappings.state = fieldMappings.state || (dataExtensionSchemaFields.some(f => f.key === 'state') ? 'state' : '');
-                fieldMappings.postal_code = fieldMappings.postal_code || (dataExtensionSchemaFields.some(f => f.key === 'postal_code') ? 'postal_code' : '');
-                fieldMappings.country = fieldMappings.country || (dataExtensionSchemaFields.some(f => f.key === 'country') ? 'country' : '');
+                // Default selections (if previously saved, initActivity handles it)
+                // This part for auto-selecting common names might be redundant if initActivity correctly populates fieldMappings
+                // fieldMappings.firstName = fieldMappings.firstName || (dataExtensionSchemaFields.some(f => f.key.toLowerCase() === 'firstname' || f.key.toLowerCase() === 'first_name') ? dataExtensionSchemaFields.find(f => f.key.toLowerCase() === 'firstname' || f.key.toLowerCase() === 'first_name').key : '');
+                // ... and so on for other fields. For simplicity, relying on initActivity's loaded values.
 
-                updateFieldSelections();
+                updateFieldSelections(); // This will apply any loaded mappings
             }
 
             function renderProductSpecificOptions(selectedDesign) {
                 const $letterOptionsContainer = $('#letterOptionsContainer');
                 const $envelopeOptionsContainer = $('#envelopeOptionsContainer');
-                const $snapApartOptionsContainer = $('#snapApartOptionsContainer'); // Get new container
-                const $snapApartAddressingOptionsContainer = $('#snapApartAddressingOptionsContainer'); // Get new container
+                const $snapApartOptionsContainer = $('#snapApartOptionsContainer'); 
+                const $snapApartAddressingOptionsContainer = $('#snapApartAddressingOptionsContainer');
 
-                // Hide all product-specific containers by default
                 $letterOptionsContainer.hide();
                 $envelopeOptionsContainer.hide();
-                $snapApartOptionsContainer.hide(); // Hide new container
-                $snapApartAddressingOptionsContainer.hide(); // Hide new container
+                $snapApartOptionsContainer.hide(); 
+                $snapApartAddressingOptionsContainer.hide();
 
                 if (!selectedDesign) {
                     return;
                 }
 
                 if (selectedDesign.productType === 'letter') {
-                    // Populate and set values for Letter/Envelope options
                     populateSelectWithOptions('envelopeTypeField', ENVELOPE_TYPES, '-- Select Envelope Type --');
                     populateSelectWithOptions('envelopeFontField', ENVELOPE_FONTS, '-- Select Envelope Font --');
                     populateSelectWithOptions('envelopeFontColorField', FONT_COLORS, '-- Select Font Color --');
@@ -1045,7 +1154,7 @@
                     $('#letterColorField').val(fieldMappings.letterColor || 'false');
                     $('#letterPrintBothSidesField').val(fieldMappings.letterPrintBothSides || 'false');
                     $('#letterInsertAddressPageField').val(fieldMappings.letterInsertAddressPage || 'false');
-                    $('#envelopeTypeField').val(fieldMappings.envelopeType);
+                    $('#envelopeTypeField').val(fieldMappings.envelopeType); // Apply saved value
                     $('#envelopeFontField').val(fieldMappings.envelopeFont);
                     $('#envelopeFontColorField').val(fieldMappings.envelopeFontColor);
 
@@ -1053,68 +1162,62 @@
                     $envelopeOptionsContainer.show();
 
                 } else if (selectedDesign.productType === 'snapapart') {
-                    // Populate and set values for Snap Apart options
-                    populateSelectWithOptions('snapApartFontField', ENVELOPE_FONTS, '-- Select Snap Apart Font --'); // Reusing ENVELOPE_FONTS
-                    populateSelectWithOptions('snapApartFontColorField', FONT_COLORS, '-- Select Font Color --'); // Reusing FONT_COLORS
+                    populateSelectWithOptions('snapApartFontField', ENVELOPE_FONTS, '-- Select Snap Apart Font --'); 
+                    populateSelectWithOptions('snapApartFontColorField', FONT_COLORS, '-- Select Font Color --'); 
 
                     $('#snapApartColorField').val(fieldMappings.snapApartColor || 'false');
-                    $('#snapApartFontField').val(fieldMappings.snapApartFont);
+                    $('#snapApartFontField').val(fieldMappings.snapApartFont); // Apply saved value
                     $('#snapApartFontColorField').val(fieldMappings.snapApartFontColor);
 
                     $snapApartOptionsContainer.show();
                     $snapApartAddressingOptionsContainer.show();
                 }
-                // For other product types like 'postcard', all specific option containers will remain hidden.
             }
 
             function populateSelectWithOptions(selectId, optionsArray, defaultOptionText = "-- Select --") {
                 const $select = $(`#${selectId}`);
-                $select.empty(); // Clear existing options
+                const currentValue = $select.val(); // Preserve current value if it's valid
+                $select.empty(); 
                 if (defaultOptionText) {
                     $select.append(`<option value="">${defaultOptionText}</option>`);
                 }
                 optionsArray.forEach(option => {
                     $select.append(`<option value="${option.key}">${option.label}</option>`);
                 });
+                // Try to reapply current value if it exists in new options
+                if (optionsArray.some(opt => opt.key === currentValue)) {
+                    $select.val(currentValue);
+                }
             }
 
             function renderDynamicDesignFields(designId) {
                 const $container = $('#dynamicDesignFieldsContainer');
-                $container.empty(); // Clear previous dynamic fields
+                $container.empty(); 
                 $('#dynamicDesignFieldsContainerTitle').remove();
-                // Do NOT reset fieldMappings.dynamicFields here if you want to preserve selections when re-rendering (e.g. on initial load)
-                // It should be reset if the designId genuinely changes to a new one via user interaction.
+                // fieldMappings.dynamicFields is reset when designId changes in the event handler.
 
                 if (!designId || designId === '') {
-                    $('#dynamicDesignFieldsContainerTitle').remove(); // Remove title if it exists
                     return;
                 }
 
                 const selectedDesign = designsData.find(d => d.designID === parseInt(designId));
 
-                
-                // If no valid selected design or it has no designFields, exit.
-                // Container remains empty, title remains removed.
                 if (!selectedDesign || !selectedDesign.designFields || selectedDesign.designFields.length === 0) {
                     return; 
                 }
 
-                // If we've reached this point, it means there are design fields to render.
-                // So, we should add the title. Since we removed any existing one, we can just add it.
                 $container.before('<h5 id="dynamicDesignFieldsContainerTitle" class=" mb-2">Variable mapping</h5>');
-
-
 
                 selectedDesign.designFields.forEach(df => {
                     const fieldKey = df.fieldKey;
-                    const fieldLabel = df.fieldLabel || fieldKey; // Use fieldKey if label is missing
+                    const fieldLabel = df.fieldLabel || fieldKey; 
                     const isMandatory = df.mandatory || false;
-                    // Create unique ID for the select element
                     const selectId = `dynamicField_${fieldKey}_select`;
 
-                    const $fieldGroup = $('<div class="form-group col-md-12 mb-3"></div>'); // Full width for each dynamic field
+                    const $fieldGroup = $('<div class="form-group col-md-12 mb-3"></div>'); 
                     const $label = $(`<label for="${selectId}">${fieldLabel}${isMandatory ? ' <span style="color:red;">*</span>' : ''}:</label>`);
-                    const $select = $(`<select class="form-control" id="${selectId}" name="dynamicField_${fieldKey}"></select>`);
+                    // Add 'required' attribute if mandatory for basic HTML5 validation
+                    const $select = $(`<select class="form-control" id="${selectId}" name="dynamicField_${fieldKey}" ${isMandatory ? 'required' : ''}></select>`);
 
                     $select.append('<option value="">-- Select Mapping --</option>');
                     if (dataExtensionSchemaFields && dataExtensionSchemaFields.length > 0) {
@@ -1125,29 +1228,35 @@
                         $select.append('<option value="" disabled>No Data Extension fields available</option>');
                         console.warn("dataExtensionSchemaFields is empty or not yet populated when rendering dynamic fields.");
                     }
+                    
+                    // Apply saved value for this dynamic field if it exists
+                    if (fieldMappings.dynamicFields && fieldMappings.dynamicFields[fieldKey]) {
+                        $select.val(fieldMappings.dynamicFields[fieldKey]);
+                    }
 
-
-                    // Event listener for changes on this dynamic select
                     $select.on('change', function() {
                         fieldMappings.dynamicFields[fieldKey] = $(this).val();
                         console.log(`Updated dynamic field mapping - ${fieldKey}: ${$(this).val()}`);
+                        // validateConfigForm(); // Optional: validate on change
                     });
 
                     $fieldGroup.append($label).append($select);
+                    if (isMandatory) { // Add feedback div for Bootstrap styling
+                        $fieldGroup.append('<div class="invalid-feedback">This mapping is required.</div>');
+                    }
                     $container.append($fieldGroup);
                 });
             }
 
             function updateFieldSelections() {
-                $('#firstNameField').val(fieldMappings.first_name);
-                $('#lastNameField').val(fieldMappings.last_name);
+                $('#firstNameField').val(fieldMappings.firstName);
+                $('#lastNameField').val(fieldMappings.lastName);
                 $('#streetField').val(fieldMappings.street);
                 $('#cityField').val(fieldMappings.city);
                 $('#stateField').val(fieldMappings.state);
-                $('#postalCodeField').val(fieldMappings.postal_code);
-                $('#countryField').val(fieldMappings.country);
+                $('#postalCodeField').val(fieldMappings.postalCode);
+                // $('#countryField').val(fieldMappings.country); // If used
 
-                // Return address fields (inputs) - these are direct values
                 $('#rfirstNameField').val(fieldMappings.rfirstName);
                 $('#rlastNameField').val(fieldMappings.rlastName);
                 $('#rstreetField').val(fieldMappings.rstreet);
@@ -1155,66 +1264,72 @@
                 $('#rstateField').val(fieldMappings.rstate);
                 $('#rpostalCodeField').val(fieldMappings.rpostalCode);
 
-                // Design select
                 $('#designIdSelect').val(fieldMappings.designId);
                 if (fieldMappings.designId && fieldMappings.designId !== '') {
                     $('#previewPanel').show();
-                    renderDynamicDesignFields(fieldMappings.designId);
+                    renderDynamicDesignFields(fieldMappings.designId); // This will also apply saved dynamic field values
 
-                    // Now, set the values for the (potentially) newly rendered dynamic fields
-                    if (fieldMappings.dynamicFields) {
-                        for (const fieldKey in fieldMappings.dynamicFields) {
-                            if (fieldMappings.dynamicFields.hasOwnProperty(fieldKey)) {
-                                const selectedValue = fieldMappings.dynamicFields[fieldKey];
-                                const selectId = `dynamicField_${fieldKey}_select`;
-                                $(`#${selectId}`).val(selectedValue);
-                                // console.log(`Attempted to set dynamic field ${selectId} to ${selectedValue}`);
-                            }
-                        }
-                    }
-
-                    // Render and set product-specific options (like letter/envelope)
                     const selectedDesignObject = designsData.find(d => d.designID === parseInt(fieldMappings.designId));
-                    
                     renderProductSpecificOptions(selectedDesignObject); // This will show/hide and set values
                 } else {
                     $('#previewPanel').hide();
-                    renderDynamicDesignFields(null); // Clear dynamic fields if no design is selected
+                    renderDynamicDesignFields(null); 
                     $('#dynamicDesignFieldsContainerTitle').remove();
+                    // Also hide product specific options if no design is selected
+                    $('#letterOptionsContainer, #envelopeOptionsContainer, #snapApartOptionsContainer, #snapApartAddressingOptionsContainer').hide();
+                }
+                console.log('Updated field selections based on fieldMappings:', fieldMappings);
+            }
+            
+            // Centralized change handler for mapped fields and return address inputs
+            $('#configForm').on('change input', 'select, input[type="text"]', function() {
+                const fieldName = $(this).attr('id'); // e.g., 'firstNameField', 'rfirstNameField'
+                const value = $(this).val();
+
+                if (fieldName.startsWith('r')) { // Return address fields
+                     fieldMappings[fieldName.replace('Field', '')] = value; // e.g., rfirstName
+                } else if(fieldName.endsWith('Field')) { // Mapped DE fields (selects)
+                     fieldMappings[fieldName.replace('Field', '')] = value; // e.g., firstName
+                } else if (fieldName === 'designIdSelect') {
+                    // This is handled by its own specific 'change' handler already
+                } else if (this.name && this.name.startsWith('dynamicField_')) {
+                     // This is handled by its own specific 'change' handler in renderDynamicDesignFields
+                } else if (this.name && (this.name.startsWith('letter') || this.name.startsWith('envelope') || this.name.startsWith('snapApart'))) {
+                    // Product specific options
+                    const mappingKey = this.name.replace('Field', ''); // e.g. letterColor, envelopeType
+                    fieldMappings[mappingKey] = value;
                 }
 
-                
 
-                console.log('Updated field selections:', fieldMappings);
-            }
+                // If it's a select for DE mapping, store the selected DE field name
+                // For example, if #firstNameField (a select) changes, fieldMappings.firstName gets the DE column name
+                // if (this.id === 'firstNameField') fieldMappings.firstName = value;
+                // ... (this is now more generically handled by the replace logic above)
 
-            $('#configForm').on('change', 'select[name$="Field"] , input[name$="Field"]', function() {
-                const fieldType = $(this).attr('name').replace('Field', '');
-                const fieldName = $(this).val();
-                fieldMappings[fieldType] = fieldName;
-                console.log(`Updated field mapping - ${fieldType}: ${fieldName}`);
+                console.log(`Field mapping updated - ${this.id}: ${value}`);
+                 // Optional: validate on any change for immediate feedback.
+                // Be mindful of performance or user experience if validation is too frequent.
+                // validateConfigForm(); 
             });
 
-            
 
-            $('#saveButton').click(function() {
+            $('#saveButton').click(function() { // This button is currently commented out in HTML
                 console.log('Save button clicked');
-                if (!fieldMappings.first_name) {
-                    console.log('Validation failed on Save: First Name field is required');
-                    $('#error').text('Please map at least the First Name field.').show();
+                if (!validateConfigForm()) {
+                    console.log('Validation failed on Save button click.');
                     return;
                 }
                 updatePayload();
                 console.log('Triggering updateActivity after save');
                 connection.trigger('updateActivity', payload);
-                $('#error').hide();
+                // $('#error').hide(); // Already handled by validateConfigForm
             });
 
             function updatePayload() {
                 console.log('Updating payload with field mappings:', fieldMappings);
                 const inArgumentsPayload = {
                     "dataExtension": dataExtensionKey,
-                    // Static DE mappings (use fieldMappings.firstName etc.)
+                    // Static DE mappings (store the DE field name in _field, and the GTL in the direct key)
                     "first_name_field": fieldMappings.firstName,
                     "first_name": fieldMappings.firstName ? `{{Event.${dataExtensionKey}.${fieldMappings.firstName}}}` : '',
                     "last_name_field": fieldMappings.lastName,
@@ -1227,72 +1342,59 @@
                     "state": fieldMappings.state ? `{{Event.${dataExtensionKey}.${fieldMappings.state}}}` : '',
                     "postal_code_field": fieldMappings.postalCode,
                     "postal_code": fieldMappings.postalCode ? `{{Event.${dataExtensionKey}.${fieldMappings.postalCode}}}` : '',
-                    // "country_field": fieldMappings.country,
+                    // "country_field": fieldMappings.country, // If used
                     // "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : '',
                     
-                    "selectedDesignId" : fieldMappings.designId, // Use mapping
+                    "selectedDesignId" : fieldMappings.designId, 
                     "mid" : sfmcMID,
 
-                    // Return address fields
-                    "rfirst_name": $('#rfirstNameField').val(), // Get current value from input
-                    "rlast_name": $('#rlastNameField').val(),
-                    "rstreet": $('#rstreetField').val(),
-                    "rcity": $('#rcityField').val(),
-                    "rstate": $('#rstateField').val(),
-                    "rpostal_code": $('#rpostalCodeField').val()
+                    // Return address fields from fieldMappings (which are updated by the 'change' event)
+                    "rfirst_name": fieldMappings.rfirstName, 
+                    "rlast_name": fieldMappings.rlastName,
+                    "rstreet": fieldMappings.rstreet,
+                    "rcity": fieldMappings.rcity,
+                    "rstate": fieldMappings.rstate,
+                    "rpostal_code": fieldMappings.rpostalCode
                 };
 
-                // Object to hold dynamic field mappings
-                const dynamicFieldsObject = {};
-
-                // Add dynamic field mappings to the payload
+                const dynamicFieldsToSave = {};
                 if (fieldMappings.dynamicFields) {
                     for (const fieldKey in fieldMappings.dynamicFields) {
                         if (fieldMappings.dynamicFields.hasOwnProperty(fieldKey) && fieldMappings.dynamicFields[fieldKey]) {
                             const deColumnName = fieldMappings.dynamicFields[fieldKey];
                             // Key for storing which DE column is mapped
-                            dynamicFieldsObject[`df_${fieldKey}_mappedTo`] = deColumnName; 
-                            // Key for the actual Journey Builder personalization string
-                            dynamicFieldsObject[`df_${fieldKey}_value`] = `{{Event.${dataExtensionKey}.${deColumnName}}}`;
+                            dynamicFieldsToSave[`df_${fieldKey}_mappedTo`] = deColumnName; 
+                            // Key for the actual Journey Builder personalization string (not strictly needed in inArguments if backend reconstructs)
+                            // dynamicFieldsToSave[`df_${fieldKey}_value`] = `{{Event.${dataExtensionKey}.${deColumnName}}}`;
                         }
                     }
                 }
-
-                // If dynamic fields were processed, add the stringified object to the payload
-                if (Object.keys(dynamicFieldsObject).length > 0) {
-                    inArgumentsPayload.dynamic_fields = JSON.stringify(dynamicFieldsObject);
+                if (Object.keys(dynamicFieldsToSave).length > 0) {
+                    inArgumentsPayload.dynamic_fields = JSON.stringify(dynamicFieldsToSave);
                 }
 
-                // Objects to hold product-specific options
-                const letterOptionsObject = {};
-                const snapapartOptionsObject = {};
 
-                // Add letter/envelope options IF the selected product type is 'letter'
                 const selectedDesignObject = designsData.find(d => d.designID === parseInt(fieldMappings.designId));
                 if (selectedDesignObject) {
                     inArgumentsPayload.product_type = selectedDesignObject.productType;
                     
                     if (selectedDesignObject.productType === 'letter') {
-                        letterOptionsObject.letterColor = fieldMappings.letterColor === 'true';
-                        letterOptionsObject.letterPrintBothSides = fieldMappings.letterPrintBothSides === 'true';
-                        letterOptionsObject.letterInsertAddressPage = fieldMappings.letterInsertAddressPage === 'true';
-                        letterOptionsObject.envelopeType = fieldMappings.envelopeType;
-                        letterOptionsObject.envelopeFont = fieldMappings.envelopeFont;
-                        letterOptionsObject.envelopeFontColor = fieldMappings.envelopeFontColor;
-
-                        // If letter options were processed, add the stringified object to the payload
-                        if (Object.keys(letterOptionsObject).length > 0) {
-                            inArgumentsPayload.letter_options = JSON.stringify(letterOptionsObject);
-                        }
+                        const letterOptionsObject = {
+                            letterColor: fieldMappings.letterColor === 'true',
+                            letterPrintBothSides: fieldMappings.letterPrintBothSides === 'true',
+                            letterInsertAddressPage: fieldMappings.letterInsertAddressPage === 'true',
+                            envelopeType: fieldMappings.envelopeType,
+                            envelopeFont: fieldMappings.envelopeFont,
+                            envelopeFontColor: fieldMappings.envelopeFontColor
+                        };
+                        inArgumentsPayload.letter_options = JSON.stringify(letterOptionsObject);
                     } else if (selectedDesignObject.productType === 'snapapart') {
-                        snapapartOptionsObject.snapApartColor = fieldMappings.snapApartColor === 'true';
-                        snapapartOptionsObject.snapApartFont = fieldMappings.snapApartFont;
-                        snapapartOptionsObject.snapApartFontColor = fieldMappings.snapApartFontColor;
-
-                        // If snap-apart options were processed, add the stringified object to the payload
-                        if (Object.keys(snapapartOptionsObject).length > 0) {
-                            inArgumentsPayload.snapapart_options = JSON.stringify(snapapartOptionsObject);
-                        }
+                         const snapapartOptionsObject = {
+                            snapApartColor: fieldMappings.snapApartColor === 'true',
+                            snapApartFont: fieldMappings.snapApartFont,
+                            snapApartFontColor: fieldMappings.snapApartFontColor
+                        };
+                        inArgumentsPayload.snapapart_options = JSON.stringify(snapapartOptionsObject);
                     }
                 }
 
@@ -1306,25 +1408,23 @@
                     url: `${window.APP_URL}/save`, 
                     verb: "POST", 
                     useJwt: true, 
-                    configured: true 
+                    body: JSON.stringify(inArgumentsPayload) // Send the inArguments directly if your save endpoint expects them
                 };
                 payload['configurationArguments'].validate = { 
                     url: `${window.APP_URL}/validate`, 
                     verb: "POST", 
                     useJwt: true, 
-                    configured: true 
                 };
                 payload['configurationArguments'].publish = { 
                     url: `${window.APP_URL}/publish`, 
                     verb: "POST", 
                     useJwt: true, 
-                    configured: true 
                 };
                 payload['metaData'] = payload['metaData'] || {};
                 payload.metaData.midForVerification = sfmcMID;
-                payload['metaData'].isConfigured = true;
+                payload['metaData'].isConfigured = true; 
                 payload['errors'] = null;
-                console.log('Updated payload:', JSON.stringify(payload));
+                console.log('Updated payload for SFMC:', JSON.stringify(payload));
             }
         }
     </script>
