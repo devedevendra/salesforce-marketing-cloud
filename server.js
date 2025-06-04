@@ -664,6 +664,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
         }
 
         if(product_type==='snapapart'){
+            product_type='snap-apart';
             if (Object.keys(snapapartOptionsData).length > 0) {
                 console.log('Applying snapapartOptionsData to requestBody (example):', snapapartOptionsData);
                 // Example: API might take print options directly or within a specific object
@@ -677,7 +678,8 @@ app.post('/execute', verifyJWT, async (req, res) => {
         }
 
         console.log(JSON.stringify(requestBody));
-        const response = await fetch(PCM_ENDPOINT+'/order/postcard', {
+        
+        const response = await fetch(PCM_ENDPOINT+'/order/'+product_type, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
