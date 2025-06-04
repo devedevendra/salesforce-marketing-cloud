@@ -127,6 +127,15 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="form-group col-md-12 mb-3">
+                            <label for="companyField">Company:</label>
+                            <select class="form-control" id="companyField" name="companyField"  placeholder="Company" required>
+                                <option value="">-- Select Mapping --</option>
+                            </select>
+                            <div class="invalid-feedback">Company mapping is required.</div>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="form-group col-md-6 mb-3">
                             <label for="streetField">Address:</label>
                             <select class="form-control" id="streetField" name="streetField" required>
@@ -294,6 +303,15 @@
                         <label for="rlastNameField">Last Name:</label>
                         <input type="text" class="form-control" id="rlastNameField" name="rlastNameField" placeholder="Last Name" required>
                         <div class="invalid-feedback">Last Name is required.</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12 mb-3">
+                        <label for="rcompanyField">Company:</label>
+                        <select class="form-control" id="rcompanyField" name="rcompanyField" placeholder="Company" required>
+                            <option value="">-- Select Mapping --</option>
+                        </select>
+                        <div class="invalid-feedback">Company mapping is required.</div>
                     </div>
                 </div>
                 <div class="row">
@@ -576,6 +594,7 @@
             let fieldMappings = {
                 firstName: '',
                 lastName: '',
+                company: '',
                 street: '',
                 city: '',
                 state: '',
@@ -584,6 +603,7 @@
                 designId: '',
                 rfirstName: '',
                 rlastName: '',
+                rcompany: '',
                 rstreet: '',
                 rcity: '',
                 rstate: '',
@@ -846,6 +866,82 @@
                 }
             });
 
+            /**
+            * Validates that either (First Name AND Last Name) OR Company field is provided.
+            * Shows/hides Bootstrap invalid feedback messages accordingly.
+            *
+            * @param {string} firstNameFieldId - The ID of the first name select/input field.
+            * @param {string} lastNameFieldId - The ID of the last name select/input field.
+            * @param {string} companyFieldId - The ID of the company select/input field.
+            * @param {Array<string>} errorMessagesArray - An array to push specific error messages into.
+            * @returns {boolean} True if validation passes, false otherwise.
+            */
+            function validateNameOrCompany(firstNameFieldId, lastNameFieldId, companyFieldId, errorMessagesArray) {
+                const $firstNameField = $(`#${firstNameFieldId}`);
+                const $lastNameField = $(`#${lastNameFieldId}`);
+                const $companyField = $(`#${companyFieldId}`);
+
+                const firstNameValue = $firstNameField.val();
+                const lastNameValue = $lastNameField.val();
+                const companyValue = $companyField.val();
+
+                const firstNameProvided = firstNameValue && String(firstNameValue).trim() !== '';
+                const lastNameProvided = lastNameValue && String(lastNameValue).trim() !== '';
+                const companyProvided = companyValue && String(companyValue).trim() !== '';
+
+                let isValid = false;
+
+                // Clear previous states
+                $firstNameField.removeClass('is-invalid').closest('.form-group').find('.invalid-feedback').hide().text('');
+                $lastNameField.removeClass('is-invalid').closest('.form-group').find('.invalid-feedback').hide().text('');
+                $companyField.removeClass('is-invalid').closest('.form-group').find('.invalid-feedback').hide().text('');
+
+                if (firstNameProvided && lastNameProvided) {
+                    isValid = true; // Both first and last name are provided
+                } else if (companyProvided) {
+                    isValid = true; // Company is provided
+                }
+
+                if (!isValid) {
+                    // Determine which error message to show based on what's missing
+                    if (!companyProvided && (!firstNameProvided || !lastNameProvided) ) {
+                        // If company is missing, and either first or last name (or both) are missing
+                        const generalErrorMsg = 'Either (First Name AND Last Name) OR Company mapping is required.';
+                        errorMessagesArray.push(generalErrorMsg);
+
+                        // Highlight all relevant fields that could satisfy the condition
+                        if (!firstNameProvided) {
+                            $firstNameField.addClass('is-invalid');
+                            $firstNameField.closest('.form-group').find('.invalid-feedback').text('First Name or Company is required.').show();
+                        }
+                        if (!lastNameProvided) {
+                            // Only show error for last name if first name was attempted or if it's part of the general guidance
+                            $lastNameField.addClass('is-invalid');
+                            $lastNameField.closest('.form-group').find('.invalid-feedback').text('Last Name or Company is required.').show();
+                        }
+                        if (!companyProvided) {
+                            $companyField.addClass('is-invalid');
+                            $companyField.closest('.form-group').find('.invalid-feedback').text('Company or (First AND Last Name) is required.').show();
+                        }
+
+                    } else if (firstNameProvided && !lastNameProvided && !companyProvided) {
+                        // First name is there, but last name is missing, and company is also missing
+                        const lastNameErrorMsg = 'Last Name is required if First Name is provided (or provide Company).';
+                        errorMessagesArray.push(lastNameErrorMsg);
+                        $lastNameField.addClass('is-invalid');
+                        $lastNameField.closest('.form-group').find('.invalid-feedback').text(lastNameErrorMsg).show();
+                        // Also remind about company as an alternative
+                        $companyField.addClass('is-invalid');
+                        $companyField.closest('.form-group').find('.invalid-feedback').text('Or provide Company.').show();
+
+
+                    }
+                    // No specific "else if" for (!firstNameProvided && lastNameProvided && !companyProvided)
+                    // because the general message above should cover it by highlighting first name and company.
+                }
+                return isValid;
+            }
+
 
             function validateConfigForm() {
                 let isValid = true;
@@ -888,8 +984,14 @@
                 }
 
                 // Recipient Address
-                if (!validateSingleField('firstNameField', 'First Name mapping is required.')) isValid = false;
-                if (!validateSingleField('lastNameField', 'Last Name mapping is required.')) isValid = false;
+                if (!validateNameOrCompany('firstNameField', 'lastNameField', 'companyField', errorMessages)) {
+                    isValid = false;
+                    // The errorMessages array is populated by validateNameOrCompany
+                    
+                }
+                //if (!validateSingleField('firstNameField', 'First Name mapping is required.')) isValid = false;
+                //if (!validateSingleField('lastNameField', 'Last Name mapping is required.')) isValid = false;
+                //if (!validateSingleField('companyField', 'Company mapping is required.')) isValid = false;
                 if (!validateSingleField('streetField', 'Street mapping is required.')) isValid = false;
                 if (!validateSingleField('cityField', 'City mapping is required.')) isValid = false;
                 if (!validateSingleField('stateField', 'State mapping is required.')) isValid = false;
@@ -897,8 +999,15 @@
                 if (!validateSingleField('designIdSelect', 'Design selection is required.')) isValid = false;
                 if (!validateSingleField('mailClassSelect', 'MailClass selection is required.')) isValid = false;
                 // Return Address
-                if (!validateSingleField('rfirstNameField', 'First Name is required.')) isValid = false;
-                if (!validateSingleField('rlastNameField', 'Last Name is required.')) isValid = false;
+                // Recipient Address
+                if (!validateNameOrCompany('rfirstNameField', 'rlastNameField', 'rcompanyField', errorMessages)) {
+                    isValid = false;
+                    // The errorMessages array is populated by validateNameOrCompany
+                    
+                }
+                //if (!validateSingleField('rfirstNameField', 'First Name is required.')) isValid = false;
+                //if (!validateSingleField('rlastNameField', 'Last Name is required.')) isValid = false;
+                //if (!validateSingleField('rcompanyField', 'Company mapping is required.')) isValid = false;
                 if (!validateSingleField('rstreetField', 'Street is required.')) isValid = false;
                 if (!validateSingleField('rcityField', 'City is required.')) isValid = false;
                 if (!validateSingleField('rstateField', 'State is required.')) isValid = false;
@@ -1309,6 +1418,7 @@
             function updateFieldSelections() {
                 $('#firstNameField').val(fieldMappings.firstName);
                 $('#lastNameField').val(fieldMappings.lastName);
+                $('#companyField').val(fieldMappings.company);
                 $('#streetField').val(fieldMappings.street);
                 $('#cityField').val(fieldMappings.city);
                 $('#stateField').val(fieldMappings.state);
@@ -1317,6 +1427,7 @@
 
                 $('#rfirstNameField').val(fieldMappings.rfirstName);
                 $('#rlastNameField').val(fieldMappings.rlastName);
+                $('#rcompanyField').val(fieldMappings.rcompany);
                 $('#rstreetField').val(fieldMappings.rstreet);
                 $('#rcityField').val(fieldMappings.rcity);
                 $('#rstateField').val(fieldMappings.rstate);
@@ -1396,6 +1507,8 @@
                     "first_name": fieldMappings.firstName ? `{{Event.${dataExtensionKey}.${fieldMappings.firstName}}}` : '',
                     "last_name_field": fieldMappings.lastName,
                     "last_name": fieldMappings.lastName ? `{{Event.${dataExtensionKey}.${fieldMappings.lastName}}}` : '',
+                    "company_field": fieldMappings.company,
+                    "company": fieldMappings.company ? `{{Event.${dataExtensionKey}.${fieldMappings.company}}}` : '',
                     "street_field": fieldMappings.street,
                     "street": fieldMappings.street ? `{{Event.${dataExtensionKey}.${fieldMappings.street}}}` : '',
                     "city_field": fieldMappings.city,
@@ -1414,6 +1527,7 @@
                     // Return address fields from fieldMappings (which are updated by the 'change' event)
                     "rfirst_name": fieldMappings.rfirstName, 
                     "rlast_name": fieldMappings.rlastName,
+                    "rcompany": fieldMappings.rcompany,
                     "rstreet": fieldMappings.rstreet,
                     "rcity": fieldMappings.rcity,
                     "rstate": fieldMappings.rstate,

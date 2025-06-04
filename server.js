@@ -358,6 +358,16 @@ app.get('/config.json', (req, res) => {
                                 "isNullable": true,
                                 "direction": "in"
                             },
+                            "company_field": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "company": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
                             "street_field": {
                                 "dataType": "Text",
                                 "isNullable": true,
@@ -424,6 +434,11 @@ app.get('/config.json', (req, res) => {
                                 "direction": "in"
                             },
                             "rlast_name": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "rcompany": {
                                 "dataType": "Text",
                                 "isNullable": true,
                                 "direction": "in"
@@ -510,6 +525,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
     const firstName = args.first_name || 'Unknown';
     const lastName = args.last_name || 'Unknown';
     const street = args.street || 'Unknown';
+    const company = args.company || 'Unknown';
     const city = args.city || 'Unknown';
     const state = args.state || 'Unknown';
     const postalCode = args.postal_code || 'Unknown';
@@ -519,6 +535,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
 
     const rfirstName = args.rfirst_name || 'Unknown';
     const rlastName = args.rlast_name || 'Unknown';
+    const rcompany = args.rcompany || 'Unknown';
     const rstreet = args.rstreet || 'Unknown';
     const rcity = args.rcity || 'Unknown';
     const rstate = args.rstate || 'Unknown';
@@ -592,8 +609,8 @@ app.post('/execute', verifyJWT, async (req, res) => {
             "returnAddress": {
                 "zipCode": rpostalCode,
                 "state": rstate,
-                "lastName": rlastName,
-                "firstName": rfirstName,
+                //"lastName": rlastName,
+                //"firstName": rfirstName,
                 "city": rcity,
                 "address2": "",
                 "address": rstreet
@@ -603,8 +620,8 @@ app.post('/execute', verifyJWT, async (req, res) => {
                     "zipCode": postalCode,
                     "variables": recipientVariables,
                     "state": state,
-                    "lastName": lastName,
-                    "firstName": firstName,
+                    //"lastName": lastName,
+                    //"firstName": firstName,
                     "extRefNbr": "", // Replace with your logic for external reference number
                     "city": city,
                     "address": street
@@ -614,6 +631,21 @@ app.post('/execute', verifyJWT, async (req, res) => {
             "globalDesignVariables": [],
             "designID": designId // Using the dynamic designId from args
         };
+        if(rcompany!=undefined && rcompany!=''){
+            requestBody.returnAddress.company = rcompany;
+        }else{
+            requestBody.returnAddress.lastName = rlastName;
+            requestBody.returnAddress.firstName = rfirstName;
+        }
+
+        if(company!=undefined && company!=''){
+            requestBody.recipients[0].company = company;
+        }else{
+            requestBody.recipients[0].lastName = lastName;
+            requestBody.recipients[0].firstName = firstName;
+        }
+
+        
 
         if(product_type==='letter'){
             if (Object.keys(letterOptionsData).length > 0) {
@@ -655,22 +687,22 @@ app.post('/execute', verifyJWT, async (req, res) => {
         });
 
         if (!response.ok) {
-            console.error('Error sending postcard order:', response.status, response.statusText);
+            console.error('Error sending order:', response.status, response.statusText);
             try {
                 const errorData = await response.json();
-                console.error('Error details:', errorData);
-                return res.status(response.status).json({ error: `Failed to send postcard order: ${response.statusText}`, details: errorData });
+                console.error('Error details:', JSON.stringify(errorData));
+                return res.status(response.status).json({ error: `Failed to send order: ${response.statusText}`, details: errorData });
             } catch (e) {
-                return res.status(response.status).json({ error: `Failed to send postcard order: ${response.statusText}` });
+                return res.status(response.status).json({ error: `Failed to send order: ${response.statusText}` });
             }
         }
         const data = await response.json();
         //res.json(data);
-        console.log('Postcard order sent successfully');
+        console.log('Order sent successfully');
         return res.status(200).json(data);
         
     } catch (error) {
-        console.error('Error sending postcard order:', error);
+        console.error('Error sending order:', error);
         res.status(500).json({ error: `Failed to send postcard order: ${error.message}` });
     }
     
