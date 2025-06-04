@@ -658,7 +658,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
                 if(letterOptionsData.letterInsertAddressPage!=undefined)requestBody.insertAddressingPage = letterOptionsData.letterInsertAddressPage;
                 requestBody.envelope = {};
                 if (letterOptionsData.envelopeType) requestBody.envelope.type = letterOptionsData.envelopeType;
-                if (letterOptionsData.envelopeFont) requestBody.envelope.font = letterOptionsData.envelopeFont;
+                if (letterOptionsData.envelopeFont && letterOptionsData.envelopeFont!=='Standard') requestBody.envelope.font = letterOptionsData.envelopeFont;
                 if (letterOptionsData.envelopeFontColor) requestBody.envelope.fontColor = letterOptionsData.envelopeFontColor;
             }
         }
@@ -672,7 +672,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
                     requestBody.color = snapapartOptionsData.snapApartColor; 
                 }
                 requestBody.addressing = {};
-                if (snapapartOptionsData.snapApartFont) requestBody.addressing.font = snapapartOptionsData.snapApartFont;
+                if (snapapartOptionsData.snapApartFont  && snapapartOptionsData.snapApartFont!=='Standard') requestBody.addressing.font = snapapartOptionsData.snapApartFont;
                 if (snapapartOptionsData.snapApartFontColor) requestBody.addressing.fontColor = snapapartOptionsData.snapApartFontColor;
             }
         }
