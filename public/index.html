@@ -1352,7 +1352,7 @@
                      fieldMappings[fieldName.replace('Field', '')] = value; // e.g., firstName
                 } else if (fieldName === 'designIdSelect') {
                     // This is handled by its own specific 'change' handler already
-                } else if (fieldId === 'mailClassSelect') {
+                } else if (fieldName === 'mailClassSelect') {
                     fieldMappings.mailClass = value;
                 } else if (this.name && this.name.startsWith('dynamicField_')) {
                      // This is handled by its own specific 'change' handler in renderDynamicDesignFields
