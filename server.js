@@ -467,6 +467,11 @@ app.get('/config.json', (req, res) => {
                                 "dataType": "Text", // Will store stringified JSON
                                 "isNullable": true,
                                 "direction": "in"
+                            },
+                            "mailClass": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
                             }
                         }
                     ]
@@ -518,6 +523,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
     const rcity = args.rcity || 'Unknown';
     const rstate = args.rstate || 'Unknown';
     const rpostalCode = args.rpostal_code || 'Unknown';
+    const mailClass = args.mailClass || 'Unknown';
 
     const product_type = args.product_type;
 
@@ -604,7 +610,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
                     "address": street
                 }
             ],
-            "mailClass": "FirstClass",
+            "mailClass": mailClass,
             "globalDesignVariables": [],
             "designID": designId // Using the dynamic designId from args
         };
@@ -616,8 +622,8 @@ app.post('/execute', verifyJWT, async (req, res) => {
                 if (typeof letterOptionsData.letterColor !== 'undefined') {
                     requestBody.color = letterOptionsData.letterColor; 
                 }
-                if(letterOptionsData.printBothSides!=undefined)requestBody.printOnBothSides = letterOptionsData.printBothSides;
-                if(letterOptionsData.insertAddressingPage!=undefined)requestBody.insertAddressingPage = letterOptionsData.letterInsertAddressPage;
+                if(letterOptionsData.letterPrintBothSides!=undefined)requestBody.printOnBothSides = letterOptionsData.letterPrintBothSides;
+                if(letterOptionsData.letterInsertAddressPage!=undefined)requestBody.insertAddressingPage = letterOptionsData.letterInsertAddressPage;
                 requestBody.envelope = {};
                 if (letterOptionsData.envelopeType) requestBody.envelope.type = letterOptionsData.envelopeType;
                 if (letterOptionsData.envelopeFont) requestBody.envelope.font = letterOptionsData.envelopeFont;
@@ -633,8 +639,8 @@ app.post('/execute', verifyJWT, async (req, res) => {
                     requestBody.color = snapapartOptionsData.snapApartColor; 
                 }
                 requestBody.addressing = {};
-                if (snapapartOptionsData.envelopeFont) requestBody.addressing.font = snapapartOptionsData.snapApartFont;
-                if (snapapartOptionsData.envelopeFontColor) requestBody.addressing.fontColor = snapapartOptionsData.snapApartFontColor;
+                if (snapapartOptionsData.snapApartFont) requestBody.addressing.font = snapapartOptionsData.snapApartFont;
+                if (snapapartOptionsData.snapApartFontColor) requestBody.addressing.fontColor = snapapartOptionsData.snapApartFontColor;
             }
         }
 
