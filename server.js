@@ -542,7 +542,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
     const rpostalCode = args.rpostal_code || 'Unknown';
     const mailClass = args.mailClass || 'Unknown';
 
-    const product_type = args.product_type;
+    let product_type = args.product_type;
 
     let dynamicFieldsData = {};
     if (args.dynamic_fields) {
