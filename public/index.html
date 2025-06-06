@@ -1379,6 +1379,8 @@
                         // Trigger the change event so the fieldMappings object is updated
                         $envelopeFontColorSelect.trigger('change');
                     }
+                }else{
+                    $envelopeFontColorSelect.find('option').prop('disabled', false);
                 }
                 // If letterColor is 'true' (Color), all options are already enabled from the reset above.
             }
@@ -1402,6 +1404,8 @@
                         // Trigger the change event so the fieldMappings object is updated
                         $snapApartFontColorSelect.trigger('change');
                     }
+                }else{
+                    $snapApartFontColorSelect.find('option').prop('disabled', false);
                 }
                 // If letterColor is 'true' (Color), all options are already enabled from the reset above.
             }
