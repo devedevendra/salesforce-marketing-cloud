@@ -1380,8 +1380,7 @@
                         $envelopeFontColorSelect.trigger('change');
                     }
                 }else{
-                    $envelopeFontColorSelect.find('option').prop('disabled', false);
-                    $envelopeFontColorSelect.trigger('change');
+                    $envelopeFontColorSelect.find('option').removeAttr('disabled');
                 }
                 // If letterColor is 'true' (Color), all options are already enabled from the reset above.
             }
@@ -1406,8 +1405,7 @@
                         $snapApartFontColorSelect.trigger('change');
                     }
                 }else{
-                    $snapApartFontColorSelect.find('option').prop('disabled', false);
-                    $snapApartFontColorSelect.trigger('change');
+                    $snapApartFontColorSelect.find('option').removeAttr('disabled');
                 }
                 // If letterColor is 'true' (Color), all options are already enabled from the reset above.
             }
