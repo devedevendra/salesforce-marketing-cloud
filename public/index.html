@@ -1519,16 +1519,20 @@
                     // This is handled by its own specific 'change' handler already
                 } else if (fieldName === 'mailClassSelect') {
                     fieldMappings.mailClass = value;
-                } else if (fieldName === 'letterColorField') {
-                    updateEnvelopeFontColorOptions();
-                } else if (fieldName === 'snapApartColorField') {
-                    updateAddressingFontColorOptions();
                 } else if (this.name && this.name.startsWith('dynamicField_')) {
                      // This is handled by its own specific 'change' handler in renderDynamicDesignFields
                 } else if (this.name && (this.name.startsWith('letter') || this.name.startsWith('envelope') || this.name.startsWith('snapApart'))) {
                     // Product specific options
                     const mappingKey = this.name.replace('Field', ''); // e.g. letterColor, envelopeType
                     fieldMappings[mappingKey] = value;
+                }
+
+
+                if (fieldName === 'letterColorField') {
+                    updateEnvelopeFontColorOptions();
+                }
+                if (fieldName === 'snapApartColorField') {
+                    updateAddressingFontColorOptions();
                 }
 
 
