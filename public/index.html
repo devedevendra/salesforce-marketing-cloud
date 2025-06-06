@@ -1366,7 +1366,7 @@
 
                 // First, enable all options to reset the state
                 $envelopeFontColorSelect.find('option').prop('disabled', false);
-
+                console.log('letterColor==='+letterColor);
                 if (letterColor === 'false') { // Corresponds to 'Black & White'
                     // Disable Blue and Green options
                     $envelopeFontColorSelect.find('option[value="Blue"]').prop('disabled', true);
@@ -1380,6 +1380,7 @@
                         $envelopeFontColorSelect.trigger('change');
                     }
                 }else{
+                    
                     $envelopeFontColorSelect.find('option').removeAttr('disabled');
                 }
                 // If letterColor is 'true' (Color), all options are already enabled from the reset above.
@@ -1391,7 +1392,7 @@
 
                 // First, enable all options to reset the state
                 $snapApartFontColorSelect.find('option').prop('disabled', false);
-
+                console.log('snapApartColor==='+snapApartColor);
                 if (snapApartColor === 'false') { // Corresponds to 'Black & White'
                     // Disable Blue and Green options
                     $snapApartFontColorSelect.find('option[value="Blue"]').prop('disabled', true);
