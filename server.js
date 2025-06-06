@@ -522,25 +522,25 @@ app.post('/execute', verifyJWT, async (req, res) => {
     }
 
     const args = inArguments[0];
-    const firstName = args.first_name || 'Unknown';
-    const lastName = args.last_name || 'Unknown';
-    const street = args.street || 'Unknown';
-    const company = args.company || 'Unknown';
-    const city = args.city || 'Unknown';
-    const state = args.state || 'Unknown';
-    const postalCode = args.postal_code || 'Unknown';
-    const country = args.country || 'Unknown';
-    const designId =  parseInt(args.selectedDesignId || 'Unknown');
-    const mid  =  (args.mid || 'Unknown');
+    const firstName = args.first_name || '';
+    const lastName = args.last_name || '';
+    const street = args.street || '';
+    const company = args.company || '';
+    const city = args.city || '';
+    const state = args.state || '';
+    const postalCode = args.postal_code || '';
+    const country = args.country || '';
+    const designId =  parseInt(args.selectedDesignId || '');
+    const mid  =  (args.mid || '');
 
-    const rfirstName = args.rfirst_name || 'Unknown';
-    const rlastName = args.rlast_name || 'Unknown';
-    const rcompany = args.rcompany || 'Unknown';
-    const rstreet = args.rstreet || 'Unknown';
-    const rcity = args.rcity || 'Unknown';
-    const rstate = args.rstate || 'Unknown';
-    const rpostalCode = args.rpostal_code || 'Unknown';
-    const mailClass = args.mailClass || 'Unknown';
+    const rfirstName = args.rfirst_name || '';
+    const rlastName = args.rlast_name || '';
+    const rcompany = args.rcompany || '';
+    const rstreet = args.rstreet || '';
+    const rcity = args.rcity || '';
+    const rstate = args.rstate || '';
+    const rpostalCode = args.rpostal_code || '';
+    const mailClass = args.mailClass || '';
 
     let product_type = args.product_type;
 

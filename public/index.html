@@ -1289,6 +1289,7 @@
 
                     $letterOptionsContainer.show();
                     $envelopeOptionsContainer.show();
+                    updateEnvelopeFontColorOptions();
 
                 } else if (selectedDesign.productType === 'snapapart') {
                     populateSelectWithOptions('snapApartFontField', ENVELOPE_FONTS, '-- Select Snap Apart Font --'); 
@@ -1300,6 +1301,7 @@
 
                     $snapApartOptionsContainer.show();
                     $snapApartAddressingOptionsContainer.show();
+                    updateAddressingFontColorOptions();
                 }
             }
 
@@ -1355,6 +1357,53 @@
                     $mailClassSelect.val(''); 
                 }
 
+            }
+
+
+            function updateEnvelopeFontColorOptions() {
+                const letterColor = $('#letterColorField').val(); // This will be 'true' or 'false'
+                const $envelopeFontColorSelect = $('#envelopeFontColorField');
+
+                // First, enable all options to reset the state
+                $envelopeFontColorSelect.find('option').prop('disabled', false);
+
+                if (letterColor === 'false') { // Corresponds to 'Black & White'
+                    // Disable Blue and Green options
+                    $envelopeFontColorSelect.find('option[value="Blue"]').prop('disabled', true);
+                    $envelopeFontColorSelect.find('option[value="Green"]').prop('disabled', true);
+
+                    // If a disabled option (Blue or Green) is currently selected, switch the selection to 'Black'
+                    const currentSelection = $envelopeFontColorSelect.val();
+                    if (currentSelection === 'Blue' || currentSelection === 'Green') {
+                        $envelopeFontColorSelect.val('Black');
+                        // Trigger the change event so the fieldMappings object is updated
+                        $envelopeFontColorSelect.trigger('change');
+                    }
+                }
+                // If letterColor is 'true' (Color), all options are already enabled from the reset above.
+            }
+
+            function updateAddressingFontColorOptions() {
+                const snapApartColor = $('#snapApartColorField').val(); // This will be 'true' or 'false'
+                const $snapApartFontColorSelect = $('#snapApartFontColorField');
+
+                // First, enable all options to reset the state
+                $snapApartFontColorSelect.find('option').prop('disabled', false);
+
+                if (snapApartColor === 'false') { // Corresponds to 'Black & White'
+                    // Disable Blue and Green options
+                    $snapApartFontColorSelect.find('option[value="Blue"]').prop('disabled', true);
+                    $snapApartFontColorSelect.find('option[value="Green"]').prop('disabled', true);
+
+                    // If a disabled option (Blue or Green) is currently selected, switch the selection to 'Black'
+                    const currentSelection = $snapApartFontColorSelect.val();
+                    if (currentSelection === 'Blue' || currentSelection === 'Green') {
+                        $snapApartFontColorSelect.val('Black');
+                        // Trigger the change event so the fieldMappings object is updated
+                        $snapApartFontColorSelect.trigger('change');
+                    }
+                }
+                // If letterColor is 'true' (Color), all options are already enabled from the reset above.
             }
 
             function renderDynamicDesignFields(designId) {
@@ -1465,6 +1514,10 @@
                     // This is handled by its own specific 'change' handler already
                 } else if (fieldName === 'mailClassSelect') {
                     fieldMappings.mailClass = value;
+                } else if (fieldName === 'letterColorField') {
+                    updateEnvelopeFontColorOptions();
+                } else if (fieldName === 'snapApartColorField') {
+                    updateAddressingFontColorOptions();
                 } else if (this.name && this.name.startsWith('dynamicField_')) {
                      // This is handled by its own specific 'change' handler in renderDynamicDesignFields
                 } else if (this.name && (this.name.startsWith('letter') || this.name.startsWith('envelope') || this.name.startsWith('snapApart'))) {
