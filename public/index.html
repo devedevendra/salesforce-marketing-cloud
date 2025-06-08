@@ -1285,7 +1285,7 @@
                     $('#letterInsertAddressPageField').val(fieldMappings.letterInsertAddressPage || 'false');
                     $('#envelopeTypeField').val(fieldMappings.envelopeType); // Apply saved value
                     $('#envelopeFontField').val(fieldMappings.envelopeFont);
-                    $('#envelopeFontColorField').val(fieldMappings.envelopeFontColor);
+                    $('#envelopeFontColorField').val(fieldMappings.envelopeFontColor || 'Black');
 
                     $letterOptionsContainer.show();
                     $envelopeOptionsContainer.show();
@@ -1297,7 +1297,7 @@
 
                     $('#snapApartColorField').val(fieldMappings.snapApartColor || 'false');
                     $('#snapApartFontField').val(fieldMappings.snapApartFont); // Apply saved value
-                    $('#snapApartFontColorField').val(fieldMappings.snapApartFontColor);
+                    $('#snapApartFontColorField').val(fieldMappings.snapApartFontColor || 'Black');
 
                     $snapApartOptionsContainer.show();
                     $snapApartAddressingOptionsContainer.show();
@@ -1378,10 +1378,12 @@
                         $envelopeFontColorSelect.val('Black');
                         // Trigger the change event so the fieldMappings object is updated
                         $envelopeFontColorSelect.trigger('change');
+                        $envelopeFontColorSelect.hide();
                     }
                 }else{
                     
                     $envelopeFontColorSelect.find('option').removeAttr('disabled');
+                    $envelopeFontColorSelect.show();
                 }
                 // If letterColor is 'true' (Color), all options are already enabled from the reset above.
             }
@@ -1405,8 +1407,10 @@
                         // Trigger the change event so the fieldMappings object is updated
                         $snapApartFontColorSelect.trigger('change');
                     }
+                    $snapApartFontColorSelect.hide();
                 }else{
                     $snapApartFontColorSelect.find('option').removeAttr('disabled');
+                    $snapApartFontColorSelect.show();
                 }
                 // If letterColor is 'true' (Color), all options are already enabled from the reset above.
             }
@@ -1604,7 +1608,7 @@
                             // Key for storing which DE column is mapped
                             dynamicFieldsToSave[`df_${fieldKey}_mappedTo`] = deColumnName; 
                             // Key for the actual Journey Builder personalization string (not strictly needed in inArguments if backend reconstructs)
-                            // dynamicFieldsToSave[`df_${fieldKey}_value`] = `{{Event.${dataExtensionKey}.${deColumnName}}}`;
+                            dynamicFieldsToSave[`df_${fieldKey}_value`] = `{{Event.${dataExtensionKey}.${deColumnName}}}`;
                         }
                     }
                 }
