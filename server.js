@@ -595,7 +595,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
                     // Use the DE column name (from mappedTo) as the variable name if available, otherwise use the baseKey
                     const variableName =  baseKey;
                     recipientVariables.push({
-                        name: variableName,
+                        key: variableName,
                         value: dynamicFieldsData[key] // This is the actual value resolved by Journey Builder
                     });
                 }

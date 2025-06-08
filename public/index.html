@@ -239,7 +239,7 @@
                                     </select>
                                     <div class="invalid-feedback">Envelope Font is required.</div>
                                 </div>
-                                <div class="form-group col-md-12">
+                                <div class="form-group col-md-12" id="envelopeFontColorPanel">
                                     <label for="envelopeFontColorField">Font Color:</label>
                                     <select id="envelopeFontColorField" name="envelopeFontColorField" class="form-control" required>
                                     </select>
@@ -274,7 +274,7 @@
                                     </select>
                                     <div class="invalid-feedback">Snap Apart Font is required.</div>
                                 </div>
-                                <div class="form-group col-md-6">
+                                <div class="form-group col-md-6" id="snapApartFontColorPanel">
                                     <label for="snapApartFontColorField">Font Color:</label>
                                     <select id="snapApartFontColorField" name="snapApartFontColorField" class="form-control" required>
                                     </select>
@@ -1363,7 +1363,7 @@
             function updateEnvelopeFontColorOptions() {
                 const letterColor = $('#letterColorField').val(); // This will be 'true' or 'false'
                 const $envelopeFontColorSelect = $('#envelopeFontColorField');
-
+                const $envelopeFontColorPanel = $('#envelopeFontColorPanel');
                 // First, enable all options to reset the state
                 $envelopeFontColorSelect.find('option').prop('disabled', false);
                 console.log('letterColor==='+letterColor);
@@ -1378,12 +1378,14 @@
                         $envelopeFontColorSelect.val('Black');
                         // Trigger the change event so the fieldMappings object is updated
                         $envelopeFontColorSelect.trigger('change');
-                        $envelopeFontColorSelect.hide();
+                        //envelopeFontColorPanel
+                        
+                        $envelopeFontColorPanel.hide();
                     }
                 }else{
                     
                     $envelopeFontColorSelect.find('option').removeAttr('disabled');
-                    $envelopeFontColorSelect.show();
+                    $envelopeFontColorPanel.show();
                 }
                 // If letterColor is 'true' (Color), all options are already enabled from the reset above.
             }
@@ -1391,6 +1393,7 @@
             function updateAddressingFontColorOptions() {
                 const snapApartColor = $('#snapApartColorField').val(); // This will be 'true' or 'false'
                 const $snapApartFontColorSelect = $('#snapApartFontColorField');
+                const $snapApartFontColorPanel = $('#snapApartFontColorPanel');
 
                 // First, enable all options to reset the state
                 $snapApartFontColorSelect.find('option').prop('disabled', false);
@@ -1407,10 +1410,10 @@
                         // Trigger the change event so the fieldMappings object is updated
                         $snapApartFontColorSelect.trigger('change');
                     }
-                    $snapApartFontColorSelect.hide();
+                    $snapApartFontColorPanel.hide();
                 }else{
                     $snapApartFontColorSelect.find('option').removeAttr('disabled');
-                    $snapApartFontColorSelect.show();
+                    $snapApartFontColorPanel.show();
                 }
                 // If letterColor is 'true' (Color), all options are already enabled from the reset above.
             }
