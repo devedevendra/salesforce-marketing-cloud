@@ -929,7 +929,7 @@ app.post('/api/registration', async (req, res) => {
         }
 
         if (!loginResponse.ok) {
-            console.error(`PCM Login API failed. Status: ${loginResponse.status}, Body:`, loginData);
+            console.error(`PCM Login API failed. Status: ${loginResponse.status}, Body:`, JSON.stringify(loginData));
             const statusCodeToClient = loginResponse.status >= 500 ? 502 : loginResponse.status;
             return res.status(statusCodeToClient).json({
                 success: false,
