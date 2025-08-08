@@ -418,6 +418,16 @@ app.get('/config.json', (req, res) => {
                                 "isNullable": true,
                                 "direction": "in"
                             },
+                            "extRefNbr_field": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
+                            "extRefNbr": {
+                                "dataType": "Text",
+                                "isNullable": true,
+                                "direction": "in"
+                            },
                             "selectedDesignId": {
                                 "dataType": "Text",
                                 "isNullable": true,
@@ -530,6 +540,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
     const state = args.state || '';
     const postalCode = args.postal_code || '';
     const country = args.country || '';
+    const extRefNbr = args.extRefNbr || ''; 
     const designId =  parseInt(args.selectedDesignId || '');
     const mid  =  (args.mid || '');
 
@@ -604,7 +615,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
         console.log('Recipient Variables:', JSON.stringify(recipientVariables));
         // --- End Prepare recipient variables ---
                 
-
+        if(extRefNbr==undefined|| extRefNbr==null)extRefNbr="";
         const requestBody = {
             "returnAddress": {
                 "zipCode": rpostalCode,
@@ -622,7 +633,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
                     "state": state,
                     //"lastName": lastName,
                     //"firstName": firstName,
-                    "extRefNbr": "", // Replace with your logic for external reference number
+                    "extRefNbr": extRefNbr, // Replace with your logic for external reference number
                     "city": city,
                     "address": street
                 }

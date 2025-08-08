@@ -169,6 +169,14 @@
                             <div class="invalid-feedback">Postal/Zip Code mapping is required.</div>
                         </div>
                     </div>
+                     <div class="row">
+                        <div class="form-group col-md-12 mb-3">
+                        <label for="extRefNbrField">External Reference Number (Optional):</label>
+                        <select class="form-control" id="extRefNbrField" name="extRefNbrField" >
+                            <option value="">-- Select Mapping --</option>
+                        </select>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="form-group col-md-12 mb-3">
                             <label for="designIdSelect">Select Design:</label>
@@ -597,6 +605,7 @@
                 city: '',
                 state: '',
                 postalCode: '',
+                extRefNbr: '',
                 // country: '', // Add if countryField is re-enabled in HTML
                 designId: '',
                 rfirstName: '',
@@ -677,6 +686,7 @@
                     fieldMappings.city = inArgs.city_field || '';
                     fieldMappings.state = inArgs.state_field || '';
                     fieldMappings.postalCode = inArgs.postal_code_field || '';
+                    fieldMappings.extRefNbr = inArgs.extRefNbr_field || '';  
                     // fieldMappings.country = inArgs.country_field || ''; // If used
 
                     fieldMappings.designId = inArgs.selectedDesignId || '';
@@ -1484,6 +1494,7 @@
                 $('#cityField').val(fieldMappings.city);
                 $('#stateField').val(fieldMappings.state);
                 $('#postalCodeField').val(fieldMappings.postalCode);
+                $('#extRefNbrField').val(fieldMappings.extRefNbr);
                 // $('#countryField').val(fieldMappings.country); // If used
 
                 $('#rfirstNameField').val(fieldMappings.rfirstName);
@@ -1586,6 +1597,8 @@
                     "state": fieldMappings.state ? `{{Event.${dataExtensionKey}.${fieldMappings.state}}}` : '',
                     "postal_code_field": fieldMappings.postalCode,
                     "postal_code": fieldMappings.postalCode ? `{{Event.${dataExtensionKey}.${fieldMappings.postalCode}}}` : '',
+                    "extRefNbr_field": fieldMappings.extRefNbr,
+                    "extRefNbr": fieldMappings.extRefNbr ? `{{Event.${dataExtensionKey}.${fieldMappings.extRefNbr}}}` : '',
                     // "country_field": fieldMappings.country, // If used
                     // "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : '',
                     
