@@ -530,6 +530,7 @@ app.post('/save', express.text({ type: 'application/jwt' }), async (req, res) =>
 
     // We must decode the token without verification to get the MID first
     const unverifiedPayload = jwt.decode(token);
+    console.log('Save endpoint called with body:', JSON.stringify(unverifiedPayload));
     let peekedMid;
 
     if (unverifiedPayload && unverifiedPayload.inArguments && unverifiedPayload.inArguments[0] && unverifiedPayload.inArguments[0].mid) {
