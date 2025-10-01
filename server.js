@@ -533,8 +533,8 @@ app.post('/save', express.text({ type: 'application/jwt' }), async (req, res) =>
     console.log('Save endpoint called with body:', JSON.stringify(unverifiedPayload));
     let peekedMid;
 
-    if (unverifiedPayload && unverifiedPayload.inArguments && unverifiedPayload.inArguments[0] && unverifiedPayload.inArguments[0].mid) {
-        peekedMid = unverifiedPayload.inArguments[0].mid;
+    if (unverifiedPayload && unverifiedPayload.mid) {
+        peekedMid = unverifiedPayload.mid;
     } else {
         console.error('Save verification failed: MID not found in JWT payload.');
         // Fail the save; the token is fundamentally malformed for our use case.
