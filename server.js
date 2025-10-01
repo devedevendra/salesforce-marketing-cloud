@@ -18,6 +18,7 @@ const APP_URL = process.env.APP_URL || 'https://salesforce-marketing-cloud-25ceb
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const CIPHER_KEY = process.env.CIPHER_KEY;
 const PCM_ENDPOINT = process.env.PCM_ENDPOINT;
+const invalidatedMIDs = new Set();
 
 // --- START: Encryption and Decryption Functions ---
 /**
@@ -511,7 +512,7 @@ app.get('/config.json', (req, res) => {
 // Serve static files (after the dynamic routes)
 app.use(express.static('public'));
 
-app.post('/save',(req, res) => {
+/*app.post('/save',(req, res) => {
     console.log('Save endpoint called with body:', JSON.stringify(req.body));
     //console.log('Decoded JWT:', JSON.stringify(req.decoded));
     res.json({
@@ -520,6 +521,68 @@ app.post('/save',(req, res) => {
         metaData: { isConfigured: true }
     });
     console.log('Save endpoint responded with success');
+});*/
+
+app.post('/save', express.text({ type: 'application/jwt' }), async (req, res) => {
+    console.log('Save endpoint called with JWT verification.');
+    const token = req.body;
+
+    // We must decode the token without verification to get the MID first
+    const unverifiedPayload = jwt.decode(token);
+    let peekedMid;
+
+    if (unverifiedPayload && unverifiedPayload.inArguments && unverifiedPayload.inArguments[0] && unverifiedPayload.inArguments[0].mid) {
+        peekedMid = unverifiedPayload.inArguments[0].mid;
+    } else {
+        console.error('Save verification failed: MID not found in JWT payload.');
+        // Fail the save; the token is fundamentally malformed for our use case.
+        return res.status(400).json({ error: 'Bad Request: MID missing from JWT.' });
+    }
+
+    try {
+        // Step 1: Fetch the latest JWT Secret from your PCM service, just like in verifyJWT
+        const pcmLoginApiUrl = `${PCM_ENDPOINT}/auth/marketing-cloud-login`;
+        const encryptedMID = await encryptString_node(peekedMid, CIPHER_KEY);
+        const pcmResponse = await fetch(pcmLoginApiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uniqueID: encryptedMID }),
+        });
+
+        if (pcmResponse.status !== 200) {
+            const errorBody = await pcmResponse.text();
+            console.error(`Save verification: PCM lookup failed for MID ${peekedMid} with status ${pcmResponse.status}. Body: ${errorBody}`);
+            // If we can't get the secret, we can't verify. Fail the save.
+            return res.status(502).json({ error: 'Could not retrieve configuration from verification service.' });
+        }
+
+        const responseBody = await pcmResponse.json();
+        const currentJwtSecret = responseBody.jwtSecret;
+
+        // Step 2: Verify the token with the fetched secret
+        jwt.verify(token, currentJwtSecret, (err, decoded) => {
+            if (err) {
+                // VERIFICATION FAILED! This is the core of the fix.
+                console.error(`JWT verification FAILED on /save for MID ${peekedMid}: ${err.message}`);
+                
+                // Flag this MID as needing re-registration for the next time the UI loads.
+                invalidatedMIDs.add(peekedMid);
+                console.log(`MID ${peekedMid} has been flagged for re-registration.`);
+
+                // Crucially, fail the save operation by returning a non-200 status.
+                // SFMC will see this and not save the activity configuration.
+                return res.status(401).json({ error: 'Invalid JWT. Configuration not saved.' });
+            }
+            
+            // If verification is successful, respond with 200 OK to let SFMC save.
+            console.log(`JWT for MID ${peekedMid} verified successfully on /save.`);
+            res.status(200).json({ success: true });
+        });
+
+    } catch (error) {
+        console.error(`An unexpected error occurred during /save for MID ${peekedMid}:`, error);
+        return res.status(500).json({ error: 'Internal server error during save verification.' });
+    }
 });
 
 app.post('/execute', verifyJWT, async (req, res) => {
@@ -811,7 +874,7 @@ app.post('/getDesigns',  async (req, res) => {
 });
 
 // --- Endpoint to proxy DE request using frontend token ---
-app.post('/api/verify', async (req, res) => {
+/*app.post('/api/verify', async (req, res) => {
     console.log('Received request for /api/verify');
     const { mid } = req.body; // Get token/URL from request body
 
@@ -890,6 +953,80 @@ app.post('/api/verify', async (req, res) => {
             success: false,
             message: error.message || "A network error occurred or the response was not valid JSON.",
             errorCode: "NETWORK_OR_PARSE_ERROR" // Custom error code for this scenario
+        });
+    }
+});*/
+
+app.post('/api/verify', async (req, res) => {
+    console.log('Received request for /api/verify');
+    const { mid } = req.body; // Get MID from request body
+
+    if (!mid) {
+        return res.status(400).json({ error: 'Missing MID in request body.' });
+    }
+
+    // *** NEW LOGIC START ***
+    // Check if this MID was previously flagged for re-registration due to a failed save.
+    if (invalidatedMIDs.has(mid)) {
+        console.log(`MID ${mid} was flagged as invalid. Forcing re-registration.`);
+        // Clear the flag so it only affects the user once.
+        invalidatedMIDs.delete(mid);
+        // Tell the frontend that the user does not exist, which will show the registration screen.
+        return res.status(200).json({
+            success: true,
+            existingUser: false,
+            message: "Your configuration is out of sync. Please register again."
+        });
+    }
+    // *** NEW LOGIC END ***
+
+    try {
+        const pcmLoginApiUrl = `${PCM_ENDPOINT}/auth/marketing-cloud-login`;
+        console.log(`Checking if user exists: ${pcmLoginApiUrl}`);
+        let encryptedMID = await encryptString_node(mid, CIPHER_KEY);
+        const response = await fetch(pcmLoginApiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                uniqueID: encryptedMID
+            })
+        });
+
+        const responseBody = await response.json();
+        console.log('PCM API Response Status Code:', response.status);
+
+        if (response.status === 200) {
+            return res.status(200).json({
+                success: true,
+                existingUser: true,
+                token: responseBody.token,
+                JWT: responseBody.jwtSecret
+            });
+        } else if (response.status === 404) {
+            return res.status(200).json({
+                success: true,
+                existingUser: false,
+                message: responseBody.error?.data?.[0]?.message || "Unable to locate account",
+                errorCode: responseBody.error?.code || 404
+            });
+        } else {
+            // Handle 500 and other unexpected errors
+            const errorMessage = responseBody.error?.data?.[0]?.message || responseBody.message || `An unexpected error occurred (Status: ${response.status}).`;
+            return res.status(response.status).json({
+                success: false,
+                message: errorMessage,
+                errorCode: responseBody.error?.code || response.status,
+                details: responseBody
+            });
+        }
+    } catch (error) {
+        console.error('Error during /api/verify process:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "A network error occurred.",
+            errorCode: "INTERNAL_SERVER_ERROR"
         });
     }
 });
