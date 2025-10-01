@@ -525,6 +525,7 @@ app.use(express.static('public'));
 
 app.post('/save', express.text({ type: 'application/jwt' }), async (req, res) => {
     console.log('Save endpoint called with JWT verification.');
+    console.log('Save endpoint called with body:', JSON.stringify(req.body));
     const token = req.body;
 
     // We must decode the token without verification to get the MID first
