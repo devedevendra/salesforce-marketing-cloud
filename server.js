@@ -1219,6 +1219,74 @@ app.post('/api/registration', async (req, res) => {
         });
     }
 });
+
+// --- Endpoint to Remove/Disable Marketing Cloud Registration ---
+app.post('/api/remove-registration', async (req, res) => {
+    console.log('Received request for /api/remove-registration');
+    
+    // 1. Extract the MID and the current PCM auth token from the request body.
+    // The frontend must provide these after the user confirms the action.
+    const { mid, token } = req.body;
+
+    // 2. Validate that the necessary information was provided.
+    if (!mid || !token) {
+        return res.status(400).json({
+            success: false,
+            error: 'Missing required parameters: mid and token are required.'
+        });
+    }
+
+    try {
+        // 3. Encrypt the MID using the same method as registration.
+        // The PCM API requires the encrypted MID to identify the correct account.
+        const encryptedMID = await encryptString_node(mid, CIPHER_KEY);
+        
+        const disableApiUrl = `${PCM_ENDPOINT}/integration/disable-marketing-cloud`;
+        console.log(`Calling disable API endpoint: ${disableApiUrl}`);
+
+        // 4. Make the API call to the 'disable-marketing-cloud' endpoint.
+        const response = await fetch(disableApiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // The PCM auth token is passed in the Authorization header.
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({
+                uniqueID: encryptedMID
+            })
+        });
+
+        // 5. Handle the response from the PCM API.
+        if (response.ok) {
+            // If the API returns a success status (e.g., 200 OK),
+            // inform the client that the removal was successful.
+            console.log(`Successfully disabled integration for MID: ${mid}`);
+            return res.status(200).json({
+                success: true,
+                message: 'Registration successfully removed.'
+            });
+        } else {
+            // If the API returns an error, parse the error details and forward
+            // a structured error message to the client.
+            const errorBody = await response.json().catch(() => ({ message: 'Received a non-JSON error response from the server.' }));
+            console.error(`Failed to disable integration. Status: ${response.status}`, errorBody);
+            return res.status(response.status).json({
+                success: false,
+                error: 'The server failed to remove the registration.',
+                details: errorBody
+            });
+        }
+
+    } catch (error) {
+        // 6. Handle any unexpected internal errors (e.g., encryption failure, network issues).
+        console.error('An unexpected error occurred during registration removal:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'An internal server error occurred while processing the removal request.'
+        });
+    }
+});
 // ... rest of your server.js (static files, other routes, app.listen) ...
 
 const PORT = process.env.PORT || 3000;
