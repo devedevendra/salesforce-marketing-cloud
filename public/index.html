@@ -1201,7 +1201,7 @@
                 } catch (error) {
                     // 5. Handle any errors during the process
                     console.error('Error removing registration:', error);
-                    alert(`An error occurred during removal: ${error.message}`);
+                    if(!fromJS)alert(`An error occurred during removal: ${error.message}`);
                     // Revert any loading indicator
                     // For example: $('#removeRegistrationBtn').removeClass('fa-spinner fa-spin').addClass('fa-trash-alt');
                 }
