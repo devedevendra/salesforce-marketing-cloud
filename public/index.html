@@ -855,6 +855,7 @@
                     } else if (result.success && !result.existingUser) {
                         console.log("Verification successful. User not found/new user.");
                         $('#deLoadStatus').text('User not found. Please complete registration.').show();
+                        await handleRemoveRegistration(true); // Clear any existing registration data
                         $('#regPanel').show();
                     } else {
                         const errorMessage = result.message || 'Unknown verification error';
@@ -1149,9 +1150,9 @@
 
 
             // New, more robust function to handle removing the registration
-            async function handleRemoveRegistration() {
+            async function handleRemoveRegistration(fromJS) {
                 // 1. Confirm with the user
-                if (!confirm("Are you sure you want to remove this registration? This will disable the integration for this account.")) {
+                if (!fromJS && !confirm("Are you sure you want to remove this registration? This will disable the integration for this account.")) {
                     return; // Stop if the user clicks "Cancel"
                 }
 
