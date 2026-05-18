@@ -777,7 +777,7 @@ app.post('/execute', verifyJWT, async (req, res) => {
         const data = await response.json();
         //res.json(data);
         console.log('Order sent successfully');
-        return res.status(200).json(data);
+        return res.status(200).json({});
         
     } catch (error) {
         console.error('Error sending order:', error);
