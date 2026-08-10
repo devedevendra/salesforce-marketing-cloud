@@ -658,8 +658,6 @@
                 connection.trigger('requestTokens');
                 connection.trigger('requestEndpoints');
                 connection.trigger('requestSchema');
-
-                connection.trigger('requestTriggerEventDefinition');
                 
                 $('#configPanel').hide();
                 $('#regPanel').hide();
@@ -794,8 +792,6 @@
                 }
             });
 
-            
-
 
             function runWhenReady() {
                 if (initialDataLoaded) {
@@ -896,18 +892,6 @@
                 } else {
                     console.error('No schema data received or schema is empty');
                     $('#error').text('Error: No schema data received from Journey Builder.').show();
-                }
-            });
-
-
-            // ADD THIS NEW EVENT LISTENER:
-            connection.on('requestedTriggerEventDefinition', function (eventDefinitionModel) {
-                console.log('requestedTriggerEventDefinition received:', eventDefinitionModel);
-                if (eventDefinitionModel && eventDefinitionModel.eventDefinitionKey) {
-                    dataExtensionKey = eventDefinitionModel.eventDefinitionKey;
-                    console.log('Successfully captured Dynamic Event Definition Key:', dataExtensionKey);
-                } else {
-                    console.warn('Could not find eventDefinitionKey in the response.');
                 }
             });
 
@@ -1683,24 +1667,24 @@
                     "dataExtension": dataExtensionKey,
                     // Static DE mappings (store the DE field name in _field, and the GTL in the direct key)
                     "first_name_field": fieldMappings.firstName,
-                    "first_name": fieldMappings.firstName ? `{{Event.${dataExtensionKey}."${fieldMappings.firstName}"}}` : '',
+                    "first_name": fieldMappings.firstName ? `{{Event.${dataExtensionKey}.${fieldMappings.firstName}}}` : '',
                     "last_name_field": fieldMappings.lastName,
-                    "last_name": fieldMappings.lastName ? `{{Event.${dataExtensionKey}."${fieldMappings.lastName}"}}` : '',
+                    "last_name": fieldMappings.lastName ? `{{Event.${dataExtensionKey}.${fieldMappings.lastName}}}` : '',
                     "company_field": fieldMappings.company,
-                    "company": fieldMappings.company ? `{{Event.${dataExtensionKey}."${fieldMappings.company}"}}` : '',
+                    "company": fieldMappings.company ? `{{Event.${dataExtensionKey}.${fieldMappings.company}}}` : '',
                     "street_field": fieldMappings.street,
-                    "street": fieldMappings.street ? `{{Event.${dataExtensionKey}."${fieldMappings.street}"}}` : '',
+                    "street": fieldMappings.street ? `{{Event.${dataExtensionKey}.${fieldMappings.street}}}` : '',
                     "city_field": fieldMappings.city,
-                    "city": fieldMappings.city ? `{{Event.${dataExtensionKey}."${fieldMappings.city}"}}` : '',
+                    "city": fieldMappings.city ? `{{Event.${dataExtensionKey}.${fieldMappings.city}}}` : '',
                     "state_field": fieldMappings.state,
-                    "state": fieldMappings.state ? `{{Event.${dataExtensionKey}."${fieldMappings.state}"}}` : '',
+                    "state": fieldMappings.state ? `{{Event.${dataExtensionKey}.${fieldMappings.state}}}` : '',
                     "postal_code_field": fieldMappings.postalCode,
-                    "postal_code": fieldMappings.postalCode ? `{{Event.${dataExtensionKey}."${fieldMappings.postalCode}"}}` : '',
+                    "postal_code": fieldMappings.postalCode ? `{{Event.${dataExtensionKey}.${fieldMappings.postalCode}}}` : '',
                     "extRefNbr_field": fieldMappings.extRefNbr,
-                    "extRefNbr": fieldMappings.extRefNbr ? `{{Event.${dataExtensionKey}."${fieldMappings.extRefNbr}"}}` : '',
+                    "extRefNbr": fieldMappings.extRefNbr ? `{{Event.${dataExtensionKey}.${fieldMappings.extRefNbr}}}` : '',
                     // "country_field": fieldMappings.country, // If used
-                    // "country": fieldMappings.country ? `{{Event.${dataExtensionKey}."${fieldMappings.country}"}}` : '',
-
+                    // "country": fieldMappings.country ? `{{Event.${dataExtensionKey}.${fieldMappings.country}}}` : '',
+                    
                     "selectedDesignId" : fieldMappings.designId, 
                     "mailClass": fieldMappings.mailClass,
                     "mid" : sfmcMID,
@@ -1723,7 +1707,7 @@
                             // Key for storing which DE column is mapped
                             dynamicFieldsToSave[`df_${fieldKey}_mappedTo`] = deColumnName; 
                             // Key for the actual Journey Builder personalization string (not strictly needed in inArguments if backend reconstructs)
-                            dynamicFieldsToSave[`df_${fieldKey}_value`] = `{{Event.${dataExtensionKey}."${deColumnName}"}}`;
+                            dynamicFieldsToSave[`df_${fieldKey}_value`] = `{{Event.${dataExtensionKey}.${deColumnName}}}`;
                         }
                     }
                 }
