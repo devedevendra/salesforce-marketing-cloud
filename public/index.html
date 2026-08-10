@@ -389,6 +389,27 @@
         </form>
         <div id="registrationStatus" style="margin-top: 15px;"></div>
     </div>
+    <!-- Registration Removal Warning Modal -->
+<div class="modal fade" id="removeWarningModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Warning: Remove Registration</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to remove this registration? <br><br>
+                <strong>This will disable the integration for this account.</strong>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRemoveBtn">Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
     <div id="designPreviewModal" class="modal">
         <div class="modal-content">
             <span class="close-button">Click here to Close Preview</span>
@@ -1168,9 +1189,9 @@
             // New, more robust function to handle removing the registration
             async function handleRemoveRegistration(fromJS) {
                 // 1. Confirm with the user
-                if (!fromJS && !confirm("Are you sure you want to remove this registration? This will disable the integration for this account.")) {
-                    return; // Stop if the user clicks "Cancel"
-                }else{
+                //if (!fromJS && !confirm("Are you sure you want to remove this registration? This will disable the integration for this account.")) {
+                //    return; // Stop if the user clicks "Cancel"
+                //}else{
 
                     console.log('Starting registration removal process...');
                     // You can add a loading indicator here if you like
@@ -1222,14 +1243,23 @@
                         // For example: $('#removeRegistrationBtn').removeClass('fa-spinner fa-spin').addClass('fa-trash-alt');
                     }
 
-                }
+                //}
 
                 
             }
 
             // Keep the event listener from the previous step
             $(document).ready(function() {
-                $(document).on('click', '#removeRegistrationBtn', handleRemoveRegistration);
+                // 1. Show the modal when the trash icon is clicked
+                $(document).on('click', '#removeRegistrationBtn', function() {
+                    $('#removeWarningModal').modal('show');
+                });
+
+                // 2. Proceed with removal ONLY when the 'Proceed' button inside the modal is clicked
+                $(document).on('click', '#confirmRemoveBtn', function() {
+                    $('#removeWarningModal').modal('hide'); // Hide the modal
+                    handleRemoveRegistration(true);         // Trigger the actual logic
+                });
             });
 
             
