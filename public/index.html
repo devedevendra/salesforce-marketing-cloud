@@ -1170,57 +1170,61 @@
                 // 1. Confirm with the user
                 if (!fromJS && !confirm("Are you sure you want to remove this registration? This will disable the integration for this account.")) {
                     return; // Stop if the user clicks "Cancel"
+                }else{
+
+                    console.log('Starting registration removal process...');
+                    // You can add a loading indicator here if you like
+                    // For example: $('#removeRegistrationBtn').addClass('fa-spinner fa-spin').removeClass('fa-trash-alt');
+
+                    try {
+                        // 2. Re-verify authentication to get a fresh, valid token
+                        console.log('Re-verifying authentication to get a fresh token...');
+                        const verifyResponse = await fetch(`${window.APP_URL}/api/verify`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ mid: sfmcMID })
+                        });
+
+                        const verifyResult = await verifyResponse.json();
+                        if (!verifyResponse.ok || !verifyResult.token) {
+                            throw new Error(verifyResult.message || 'Could not re-authenticate to proceed with removal.');
+                        }
+                        
+                        // Store the fresh token from the verification step
+                        const freshToken = verifyResult.token;
+                        console.log('Fresh token acquired.');
+
+                        // 3. Immediately use the fresh token to call the remove-registration endpoint
+                        const removeResponse = await fetch(`${window.APP_URL}/api/remove-registration`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                mid: sfmcMID,
+                                token: freshToken // Use the newly acquired token here
+                            })
+                        });
+
+                        const removeResult = await removeResponse.json();
+                        if (!removeResponse.ok) {
+                            // Handle errors from the server
+                            throw new Error(removeResult.error || `Failed with status: ${removeResponse.status}`);
+                        }
+
+                        // 4. Handle the success response
+                        alert('Registration successfully removed. The page will now reload.');
+                        window.location.reload();
+
+                    } catch (error) {
+                        // 5. Handle any errors during the process
+                        console.error('Error removing registration:', error);
+                        if(!fromJS)alert(`An error occurred during removal: ${error.message}`);
+                        // Revert any loading indicator
+                        // For example: $('#removeRegistrationBtn').removeClass('fa-spinner fa-spin').addClass('fa-trash-alt');
+                    }
+
                 }
 
-                console.log('Starting registration removal process...');
-                // You can add a loading indicator here if you like
-                // For example: $('#removeRegistrationBtn').addClass('fa-spinner fa-spin').removeClass('fa-trash-alt');
-
-                try {
-                    // 2. Re-verify authentication to get a fresh, valid token
-                    console.log('Re-verifying authentication to get a fresh token...');
-                    const verifyResponse = await fetch(`${window.APP_URL}/api/verify`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ mid: sfmcMID })
-                    });
-
-                    const verifyResult = await verifyResponse.json();
-                    if (!verifyResponse.ok || !verifyResult.token) {
-                        throw new Error(verifyResult.message || 'Could not re-authenticate to proceed with removal.');
-                    }
-                    
-                    // Store the fresh token from the verification step
-                    const freshToken = verifyResult.token;
-                    console.log('Fresh token acquired.');
-
-                    // 3. Immediately use the fresh token to call the remove-registration endpoint
-                    const removeResponse = await fetch(`${window.APP_URL}/api/remove-registration`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            mid: sfmcMID,
-                            token: freshToken // Use the newly acquired token here
-                        })
-                    });
-
-                    const removeResult = await removeResponse.json();
-                    if (!removeResponse.ok) {
-                        // Handle errors from the server
-                        throw new Error(removeResult.error || `Failed with status: ${removeResponse.status}`);
-                    }
-
-                    // 4. Handle the success response
-                    alert('Registration successfully removed. The page will now reload.');
-                    window.location.reload();
-
-                } catch (error) {
-                    // 5. Handle any errors during the process
-                    console.error('Error removing registration:', error);
-                    if(!fromJS)alert(`An error occurred during removal: ${error.message}`);
-                    // Revert any loading indicator
-                    // For example: $('#removeRegistrationBtn').removeClass('fa-spinner fa-spin').addClass('fa-trash-alt');
-                }
+                
             }
 
             // Keep the event listener from the previous step
