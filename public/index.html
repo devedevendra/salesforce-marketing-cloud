@@ -636,6 +636,7 @@
             let tokens ={};
             let endpoints = {};
             let dataExtensionKey = '';
+            let triggerEventDefinitionKey = ''; // Authoritative entry source key from requestedTriggerEventDefinition
             let fieldMappings = {
                 firstName: '',
                 lastName: '',
@@ -719,7 +720,10 @@
                     const inArgs = payload['arguments'].execute.inArguments[0] || {};
 
                     console.log('inArgs', inArgs);
-                    dataExtensionKey = inArgs.dataExtension || dataExtensionKey;
+                    // Saved key is only a fallback; the live schema / trigger event definition take priority
+                    if (!dataExtensionKey) {
+                        dataExtensionKey = inArgs.dataExtension || '';
+                    }
                     fieldMappings.firstName = inArgs.first_name_field || ''; 
                     fieldMappings.lastName = inArgs.last_name_field || '';
                     fieldMappings.company = inArgs.company_field || '';
@@ -900,23 +904,19 @@
             connection.on('requestedSchema', function(data) {
                 console.log('requestedSchema received:', JSON.stringify(data));
                 schema = data.schema || [];
-                if (schema.length > 0) {
-                    const firstKey = schema[0].key;
-                    // Example: "Event.APIEvent-01234567-abcd-1234-efgh-c1c1c1c1c1c1.ContactKey"
-                    // We want "APIEvent-01234567-abcd-1234-efgh-c1c1c1c1c1c1"
-                    const keyParts = firstKey.split('.');
-                    if (keyParts.length > 1) {
-                        dataExtensionKey = keyParts[1]; // This should be the DE Key
-                    } else {
-                         dataExtensionKey = firstKey; // Fallback, though less likely for DE schema
+                // Only "Event.<DEKey>.<Column>" entries are entry source columns. When this activity is not
+                // first, earlier activities add their outArguments (e.g. "Interaction.SALESCLOUDACTIVITY-1.salesforceObjectID"),
+                // and those can come before the Event entries, so schema[0] cannot be trusted.
+                const entryField = schema.find(item => item.key && item.key.startsWith('Event.'));
+                if (entryField) {
+                    if (!triggerEventDefinitionKey) {
+                        dataExtensionKey = entryField.key.split('.')[1];
                     }
-
-                    console.log('Extracted Data Extension key from schema:', dataExtensionKey);
-                    //$('#dataExtensionKey').val(dataExtensionKey); // This input is commented
+                    console.log('Using Data Extension key:', dataExtensionKey);
                     populateFieldDropdowns();
                 } else {
-                    console.error('No schema data received or schema is empty');
-                    $('#error').text('Error: No schema data received from Journey Builder.').show();
+                    console.error('No entry source fields found in schema');
+                    $('#error').text('Error: No entry source Data Extension fields received from Journey Builder.').show();
                 }
             });
 
@@ -925,8 +925,13 @@
             connection.on('requestedTriggerEventDefinition', function (eventDefinitionModel) {
                 console.log('requestedTriggerEventDefinition received:', eventDefinitionModel);
                 if (eventDefinitionModel && eventDefinitionModel.eventDefinitionKey) {
-                    dataExtensionKey = eventDefinitionModel.eventDefinitionKey;
+                    triggerEventDefinitionKey = eventDefinitionModel.eventDefinitionKey;
+                    dataExtensionKey = triggerEventDefinitionKey;
                     console.log('Successfully captured Dynamic Event Definition Key:', dataExtensionKey);
+                    // Schema usually arrives first, so rebuild the dropdowns with the authoritative key
+                    if (schema.length > 0) {
+                        populateFieldDropdowns();
+                    }
                 } else {
                     console.warn('Could not find eventDefinitionKey in the response.');
                 }
@@ -1308,15 +1313,18 @@
 
             $('#designIdSelect').on('change', function() {
                 const selectedDesignId = $(this).val();
+                // fetchDesigns() re-triggers change with the saved design; only reset dynamic mappings on a real design change
+                if (selectedDesignId !== fieldMappings.designId) {
+                    fieldMappings.dynamicFields = {};
+                }
                 fieldMappings.designId = selectedDesignId; // Update fieldMappings
-                
+
                 if(selectedDesignId!=undefined && selectedDesignId!='')$('#previewPanel').show();
                 else {
                     $('#previewPanel').hide();
                      $('#mailClassPanel').hide();
                 }
                 
-                fieldMappings.dynamicFields = {}; // Reset dynamic mappings when design changes
                 renderDynamicDesignFields(selectedDesignId);
                 renderMailClassOptions(selectedDesignId);
                 const selectedDesignObject = designsData.find(d => d.designID === parseInt(selectedDesignId));
@@ -1373,10 +1381,11 @@
 
             function populateFieldDropdowns() {
                 console.log('Populating field dropdowns for schema:', JSON.stringify(schema));
+                const entryPrefix = `Event.${dataExtensionKey}.`;
                 dataExtensionSchemaFields = schema
-                    .filter(item => item.key.includes(`.${dataExtensionKey}.`)) // Ensure we are getting fields for the correct DE
+                    .filter(item => item.key && item.key.startsWith(entryPrefix)) // Entry source columns only, not Interaction.* outArguments
                     .map(item => {
-                        const fieldName = item.key.split('.').pop();
+                        const fieldName = item.key.substring(entryPrefix.length);
                         return { name: fieldName, key: fieldName }; // key should be the actual field name from DE
                     });
 
